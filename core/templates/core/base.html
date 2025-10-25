@@ -1,157 +1,75 @@
-{% extends 'core/base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduPlatform{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLdcjVHlUI" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+    
+    <style>
+        /* Стили для Django Form API, чтобы они выглядели как Tailwind.
+         Вы можете улучшить их, используя django-crispy-forms,
+         но для старта этого будет достаточно.
+        */
+        form p {
+            margin-bottom: 1rem;
+        }
+        form p label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151; /* text-gray-700 */
+        }
+        form p input[type='text'],
+        form p input[type='password'],
+        form p input[type='email'],
+        form p input[type='number'],
+        form p input[type='url'],
+        form p input[type='file'],
+        form p textarea,
+        form p select {
+            display: block;
+            width: 100%;
+            border-radius: 0.375rem; /* rounded-md */
+            border: 1px solid #D1D5DB; /* border-gray-300 */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            padding: 0.5rem 0.75rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        form p input:focus,
+        form p textarea:focus,
+        form p select:focus {
+            border-color: #3B82F6; /* brand-blue */
+            box-shadow: 0 0 0 2px #BFDBFE; /* ring-blue-200 */
+            outline: none;
+        }
+        .helptext {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #6B7280; /* text-gray-500 */
+        }
+        .helptext ul {
+            display: none; /* Скрываем список правил пароля по умолчанию */
+        }
+        .errorlist {
+            color: #DC2626; /* text-red-600 */
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            list-style-type: none;
+            padding-left: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+    {% block content %}
+    {% endblock %}
+</body>
+</html>
 
-{% block title %}Онлайн-курс: Культура речи и стилистика{% endblock %}
-
-{% block content %}
-    <header class="bg-white shadow-sm sticky top-0 z-50 backdrop-blur-md">
-        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <a href="{% url 'core:index' %}" class="flex items-center space-x-2">
-                    <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                    </svg>
-                    <span class="text-2xl font-bold text-gray-900">EduPlatform</span>
-                </a>
-                
-                <div class="hidden md:flex space-x-6 items-center">
-                    <a href="{% url 'core:about' %}" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">О платформе</a>
-                    <a href="{% url 'core:course' %}" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">Программа курса</a>
-                    
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'core:profile' %}" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">Профиль</a>
-                        <form action="{% url 'core:logout' %}" method="post" class="inline">
-                            {% csrf_token %}
-                            <button type="submit" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">Выйти</button>
-                        </form>
-                    {% else %}
-                        <a href="{% url 'core:login' %}" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">Войти</a>
-                        <a href="{% url 'core:register' %}" class="ml-4 inline-block bg-blue-600 text-white py-2 px-5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all transform hover:scale-105">
-                            Регистрация
-                        </a>
-                    {% endif %}
-                </div>
-                </div>
-        </nav>
-    </header>
-
-    <main class="overflow-hidden">
-        <section class="py-24 sm:py-32 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center max-w-4xl mx-auto">
-                    <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl lg:text-6xl tracking-tight">
-                        <span class="block">Ваша речь — ваш <span class="text-blue-600">успех</span>.</span>
-                    </h1>
-                    <p class="mt-6 text-xl text-gray-600">
-                        Превратите слова в свой главный инструмент. Наш курс научит вас говорить и писать уверенно, грамотно и убедительно — от деловых переговоров до ярких публичных выступлений.
-                    </p>
-                    <div class="mt-10">
-                        <a href="{% url 'core:register' %}" class="inline-block px-10 py-4 text-lg font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transform transition-transform hover:scale-105 shadow-lg hover:shadow-blue-500/50">
-                            Начать обучение
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="py-24 bg-gray-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center max-w-3xl mx-auto">
-                    <h2 class="text-3xl font-extrabold text-gray-900">Чему вы научитесь на курсе?</h2>
-                </div>
-                <div class="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-                    <div class="bg-white p-6 rounded-xl shadow-lg transition duration-300 hover:shadow-2xl hover:-translate-y-1">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" /></svg>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-900 text-center">Обрести уверенность</h3>
-                        <p class="mt-2 text-base text-gray-600 text-center">Забудьте о страхе публичных выступлений и неловких паузах.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-lg transition duration-300 hover:shadow-2xl hover:-translate-y-1">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-900 text-center">Говорить грамотно</h3>
-                        <p class="mt-2 text-base text-gray-600 text-center">Избавьтесь от речевых ошибок и слов-паразитов раз и навсегда.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-lg transition duration-300 hover:shadow-2xl hover:-translate-y-1">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2V7a2 2 0 012-2h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V8z" /></svg>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-900 text-center">Быть убедительным</h3>
-                        <p class="mt-2 text-base text-gray-600 text-center">Научитесь подбирать точные слова, чтобы влиять и вдохновлять.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-lg transition duration-300 hover:shadow-2xl hover:-translate-y-1">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mx-auto mb-5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-900 text-center">Писать профессионально</h3>
-                        <p class="mt-2 text-base text-gray-600 text-center">Создавайте безупречные тексты — от деловых писем до эссе.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="py-24 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h3 class="text-3xl font-bold text-gray-900 text-center">Ваши преподаватели — эксперты-филологи</h3>
-                <div class="mt-12 max-w-4xl mx-auto grid grid-cols-1 gap-12 sm:grid-cols-3">
-                    <div class="text-center">
-                        <img class="mx-auto h-32 w-32 rounded-full object-cover shadow-lg" src="{% static 'images/teachers/img.png' %}" alt="Дмитрюк Н.В.">
-                        <h4 class="mt-4 text-xl font-semibold">Дмитрюк Н.В.</h4>
-                        <p class="text-blue-600">д.ф.н., профессор</p>
-                    </div>
-                    <div class="text-center">
-                        <img class="mx-auto h-32 w-32 rounded-full object-cover shadow-lg" src="{% static 'images/teachers/2img.png' %}" alt="Стычева О.А.">
-                        <h4 class="mt-4 text-xl font-semibold">Стычева О.А.</h4>
-                        <p class="text-blue-600">к.п.н., доцент</p>
-                    </div>
-                    <div class="text-center">
-                        <img class="mx-auto h-32 w-32 rounded-full object-cover shadow-lg" src="{% static 'images/teachers/1img.png' %}" alt="Мезенцева Е.С.">
-                        <h4 class="mt-4 text-xl font-semibold">Мезенцева Е.С.</h4>
-                        <p class="text-blue-600">к.ф.н., ст. преподаватель</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="py-24 bg-gray-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h3 class="text-3xl font-bold text-gray-900 text-center">Программа курса: от основ до мастерства</h3>
-                <div class="mt-12 max-w-lg mx-auto grid gap-8 lg:grid-cols-3 lg:max-w-none">
-                    {% for module in modules|slice:":3" %} {# Показываем только первые 3 модуля #}
-                        <div class="flex flex-col rounded-xl shadow-lg hover:shadow-2xl overflow-hidden bg-white transition-all duration-300 hover:-translate-y-2">
-                            <img class="h-48 w-full object-cover" src="https://placehold.co/600x400/BFDBFE/1E40AF?text=Модуль+{{ forloop.counter }}" alt="{{ module.title }}">
-                            <div class="p-6 flex flex-col flex-grow">
-                                <h4 class="text-xl font-semibold text-gray-900">{{ module.title }}</h4>
-                                <ul class="mt-3 list-disc list-inside text-gray-600 space-y-2 flex-grow">
-                                    {% for lesson in module.lessons.all|slice:":3" %}
-                                        <li>{{ lesson.title }}</li>
-                                    {% empty %}
-                                        <li>Скоро здесь появятся уроки...</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-                <div class="mt-16 text-center">
-                    <a href="{% url 'core:course' %}" class="text-lg font-medium text-blue-600 hover:text-blue-800">
-                        Посмотреть полную программу &rarr;
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <footer class="bg-gray-900">
-            <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-center space-x-6">
-                    <a href="{% url 'core:about' %}" class="text-gray-400 hover:text-white">О платформе</a>
-                    <a href="#" class="text-gray-400 hover:text-white">Контакты</a>
-                    <a href="#" class="text-gray-400 hover:text-white">Политика конфиденциальности</a>
-                </div>
-                <p class="mt-8 text-center text-base text-gray-400">&copy; {% now "Y" %} EduPlatform. Все права защищены.</p>
-            </div>
-        </footer>
-    </main>
-{% endblock %}
