@@ -1,0 +1,131 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Курс{% endblock %}
+
+{% block content %}
+<div class="flex h-screen">
+    <!-- Левая колонка (20%) - Список модулей -->
+    <div class="w-1/5 bg-gray-200 p-4 overflow-y-auto" id="modules-column">
+        <h2 class="text-xl font-bold mb-4">Модули</h2>
+        {% if modules %}
+            <div class="space-y-2">
+                {% for module in modules %}
+                <div class="module-item">
+                    <button class="w-full text-left p-2 bg-gray-300 hover:bg-gray-400 focus:outline-none module-toggle" data-module-id="{{ module.id }}">
+                        {{ module.title }}
+                    </button>
+                    <div class="module-content hidden pl-4">
+                        <ul class="space-y-1">
+                            {% for lesson in lessons %}
+                                {% if lesson.module_id == module.id %}
+                                    <li>
+                                        <button class="w-full text-left p-2 bg-gray-100 hover:bg-gray-200 focus:outline-none lesson-toggle" data-lesson-id="{{ lesson.id }}">
+                                            {{ lesson.title }}
+                                        </button>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Модули отсутствуют. Количество модулей: {{ modules|length }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Правая колонка (80%) - Содержимое урока -->
+    <div class="w-4/5 p-6" id="lesson-content">
+        {% if lessons %}
+            {% for lesson in lessons %}
+                <div class="lesson-item hidden" data-lesson-id="{{ lesson.id }}">
+                    {% if lesson.video_url %}
+                        <div class="mb-4">
+                            <iframe width="100%" height="315" src="{{ lesson.video_url }}" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    {% endif %}
+                    <h2 class="text-2xl font-bold mb-2">{{ lesson.title }}</h2>
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold">Описание</h3>
+                        <p>{{ lesson.content|default:"Описание отсутствует" }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold">Задание</h3>
+                        <p>{{ lesson.assignment|default:"Задание для этого урока будет добавлено позже." }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold">Материалы для самообучения</h3>
+                        {% if lesson.resources.exists %}
+                            <ul class="list-disc pl-5">
+                                {% for resource in lesson.resources.all %}
+                                    <li>
+                                        <a href="{{ resource.url|default:'#' }}" target="_blank" class="text-blue-500 hover:underline">
+                                            {{ resource.title }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>Материалы отсутствуют.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Занятия отсутствуют. Количество уроков: {{ lessons|length }}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Скрипт загружен');
+        const moduleToggles = document.querySelectorAll('.module-toggle');
+        console.log('Найдено переключателей модулей:', moduleToggles.length);
+        let activeModule = null;
+
+        moduleToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                console.log('Клик по модулю:', this.textContent);
+                const moduleContent = this.nextElementSibling;
+                if (activeModule && activeModule !== moduleContent) {
+                    activeModule.classList.add('hidden');
+                    activeModule.previousElementSibling.classList.remove('bg-gray-400');
+                }
+                moduleContent.classList.toggle('hidden');
+                this.classList.toggle('bg-gray-400');
+                activeModule = moduleContent.classList.contains('hidden') ? null : moduleContent;
+            });
+        });
+
+        const lessonToggles = document.querySelectorAll('.lesson-toggle');
+        console.log('Найдено переключателей уроков:', lessonToggles.length);
+        let activeLesson = null;
+
+        lessonToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                console.log('Клик по уроку:', this.textContent);
+                const lessonId = this.getAttribute('data-lesson-id');
+                const lessonContent = document.querySelector(`.lesson-item[data-lesson-id="${lessonId}"]`);
+                if (activeLesson && activeLesson !== lessonContent) {
+                    activeLesson.classList.add('hidden');
+                }
+                lessonContent.classList.toggle('hidden');
+                activeLesson = lessonContent.classList.contains('hidden') ? null : lessonContent;
+            });
+        });
+
+        if (moduleToggles.length > 0) {
+            moduleToggles[0].click();
+            if (lessonToggles.length > 0) {
+                lessonToggles[0].click();
+            }
+        } else {
+            console.log('Нет переключателей модулей для активации');
+        }
+    });
+</script>
+{% endblock %}

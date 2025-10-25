@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduPlatform{% endblock %}</title>
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+    
+    <style>
+        /* Применяем стили Tailwind к формам, созданным через {{ form.as_p }} */
+        form p {
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        form p label {
+            display: block;
+            margin-bottom: 0.25rem; /* mb-1 */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: #374151; /* text-gray-700 */
+        }
+        form p input[type='text'],
+        form p input[type='password'],
+        form p input[type='email'],
+        form p input[type='number'],
+        form p input[type='url'],
+        form p textarea,
+        form p select {
+            display: block;
+            width: 100%;
+            border-radius: 0.375rem; /* rounded-md */
+            border: 1px solid #D1D5DB; /* border border-gray-300 */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            padding: 0.5rem 0.75rem; /* py-2 px-3 */
+        }
+        form p input:focus,
+        form p textarea:focus,
+        form p select:focus {
+            --tw-ring-color: #3B82F6; /* brand-blue */
+            --tw-ring-shadow: 0 0 0 1px var(--tw-ring-color);
+            box-shadow: var(--tw-ring-shadow), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            border-color: #3B82F6; /* brand-blue */
+            outline: none;
+        }
+        form p input[type='file'] {
+            font-size: 0.875rem; /* text-sm */
+        }
+        
+        /* Стилизуем вспомогательный текст (делаем его меньше и серее) */
+        .helptext {
+            display: block;
+            margin-top: 0.5rem; /* mt-2 */
+            font-size: 0.875rem; /* text-sm */
+            color: #6B7280; /* text-gray-500 */
+            line-height: 1.25rem; /* leading-5 */
+        }
+
+        /* === ВОТ ИЗМЕНЕНИЕ ===
+         Это скроет список правил для пароля, но 
+         оставит другие подсказки (которые не в списке)
+        */
+        .helptext ul {
+            display: none;
+        }
+        /* === КОНЕЦ ИЗМЕНЕНИЯ === */
+
+         /* Стили для полей с ошибками */
+        .errorlist {
+            color: #DC2626; /* text-red-600 */
+            font-size: 0.875rem; /* text-sm */
+            margin-bottom: 0.5rem;
+            list-style-type: none;
+            padding-left: 0;
+        }
+    </style>
+    </head>
+<body class="bg-gray-100">
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,165 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Онлайн-курс: Культура речи и стилистика{% endblock %}
+
+{% block content %}
+    <div class="background-shapes" aria-hidden="true">
+        <div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+    </div>
+
+    <header class="bg-white/80 shadow-sm sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="{% url 'core:index' %}" class="flex items-center">
+                    <svg class="h-8 w-8 text-brand-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <span class="ml-2 text-2xl font-bold text-gray-800">EduPlatform</span>
+                </a>
+                <nav class="hidden md:flex space-x-6 items-center">
+                    <a href="{% url 'core:about' %}" class="text-gray-500 hover:text-brand-blue transition-colors">О платформе</a>
+                    <a href="{% url 'core:course' %}" class="text-gray-500 hover:text-brand-blue transition-colors">Программа курса</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'core:profile' %}" class="text-gray-500 hover:text-brand-blue transition-colors">Профиль</a>
+                        <form action="{% url 'core:logout' %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-gray-500 hover:text-brand-blue transition-colors">Выйти</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'core:login' %}" class="text-gray-500 hover:text-brand-blue transition-colors">Войти</a>
+                        <a href="{% url 'core:register' %}" class="ml-4 inline-block bg-brand-blue text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-blue-700 transition-transform hover:scale-105">Регистрация</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative z-10 overflow-hidden">
+        <section class="py-20 sm:py-28 animated animate-fadeInUp">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl lg:text-6xl tracking-tight">
+                        <span class="block">Ваша речь — ваш <span class="text-brand-blue">успех</span>.</span>
+                        <span class="block text-3xl sm:text-4xl mt-2 text-gray-600">Говорите так, чтобы вас слушали.</span>
+                    </h1>
+                    <p class="mt-8 max-w-2xl mx-auto text-xl text-gray-600">
+                        Превратите слова в свой главный инструмент. Наш курс научит вас говорить и писать уверенно, грамотно и убедительно — от деловых переговоров до ярких публичных выступлений.
+                    </p>
+                    <div class="mt-10">
+                        <a href="{% url 'core:register' %}" class="inline-block text-center px-12 py-4 text-lg font-medium rounded-lg text-white bg-brand-blue hover:bg-blue-700 transform transition-transform hover:scale-105 shadow-lg hover:shadow-blue-500/50">
+                            Начать обучение
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 bg-white animated animate-fadeInUp delay-1">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-gray-900">Чему вы научитесь на курсе?</h2>
+                </div>
+                <div class="mt-16 grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+                    <div class="text-center p-6 rounded-xl transition duration-300 hover:bg-gray-50 hover:shadow-lg">
+                        <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-brand-blue mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-5 text-xl font-semibold text-gray-900">Обрести уверенность</h3>
+                        <p class="mt-2 text-base text-gray-600">Забудьте о страхе публичных выступлений и неловких паузах в разговоре.</p>
+                    </div>
+                    <div class="text-center p-6 rounded-xl transition duration-300 hover:bg-gray-50 hover:shadow-lg">
+                        <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-brand-blue mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-5 text-xl font-semibold text-gray-900">Говорить грамотно</h3>
+                        <p class="mt-2 text-base text-gray-600">Избавьтесь от речевых ошибок и слов-паразитов раз и навсегда.</p>
+                    </div>
+                    <div class="text-center p-6 rounded-xl transition duration-300 hover:bg-gray-50 hover:shadow-lg">
+                        <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-brand-blue mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2V7a2 2 0 012-2h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V8z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-5 text-xl font-semibold text-gray-900">Быть убедительным</h3>
+                        <p class="mt-2 text-base text-gray-600">Научитесь подбирать точные слова, чтобы влиять на решения и вдохновлять.</p>
+                    </div>
+                    <div class="text-center p-6 rounded-xl transition duration-300 hover:bg-gray-50 hover:shadow-lg">
+                        <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 text-brand-blue mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-5 text-xl font-semibold text-gray-900">Писать профессионально</h3>
+                        <p class="mt-2 text-base text-gray-600">Создавайте безупречные тексты — от деловых писем до творческих эссе.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 animated animate-fadeInUp delay-2">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-3xl font-bold text-gray-900 text-center">Ваши преподаватели — эксперты-филологи</h3>
+                <div class="mt-12 max-w-4xl mx-auto grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="text-center transform transition-transform duration-300 hover:scale-105">
+                        <img class="mx-auto h-32 w-32 rounded-full object-cover shadow-lg" src="{% static 'images/teachers/dmitryuk.jpg' %}" alt="Дмитрюк Н.В.">
+                        <h4 class="mt-4 text-xl font-semibold">Дмитрюк Н.В.</h4>
+                        <p class="text-brand-blue">д.ф.н., профессор</p>
+                    </div>
+                    <div class="text-center transform transition-transform duration-300 hover:scale-105">
+                        <img class="mx-auto h-32 w-32 rounded-full object-cover shadow-lg" src="{% static 'images/teachers/stycheva.jpg' %}" alt="Стычева О.А.">
+                        <h4 class="mt-4 text-xl font-semibold">Стычева О.А.</h4>
+                        <p class="text-brand-blue">к.п.н., доцент</p>
+                    </div>
+                    <div class="text-center transform transition-transform duration-300 hover:scale-105">
+                        <img class="mx-auto h-32 w-32 rounded-full object-cover shadow-lg" src="{% static 'images/teachers/mezentseva.jpg' %}" alt="Мезенцева Е.С.">
+                        <h4 class="mt-4 text-xl font-semibold">Мезенцева Е.С.</h4>
+                        <p class="text-brand-blue">к.ф.н., ст. преподаватель</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 bg-white animated animate-fadeInUp delay-3">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-3xl font-bold text-gray-900 text-center">Программа курса: от основ до мастерства</h3>
+                <div class="mt-12 max-w-lg mx-auto grid gap-10 lg:grid-cols-3 lg:max-w-none">
+                    {% for module in modules %}
+                        <div class="flex flex-col rounded-xl shadow-lg hover:shadow-2xl overflow-hidden bg-gray-50 transition-all duration-300 hover:-translate-y-2">
+                            <img class="h-48 w-full object-cover" src="{{ module.cover_image.url|default:'https://placehold.co/600x400/BFDBFE/1E40AF?text=Модуль' }}" alt="{{ module.title }}">
+                            <div class="p-6 flex flex-col flex-grow">
+                                <h4 class="text-xl font-semibold text-gray-900">{{ module.title }}</h4>
+                                <ul class="mt-3 list-disc list-inside text-gray-600 space-y-2 flex-grow">
+                                    {% for lesson in module.lessons.all|slice:":3" %}
+                                        <li>{{ lesson.title }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-16 text-center">
+                    <a href="{% url 'core:course' %}" class="text-lg font-medium text-brand-blue hover:text-blue-700">
+                        Посмотреть полную программу &rarr;
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-gray-900">
+            <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-center space-x-6">
+                    <a href="{% url 'core:about' %}" class="text-gray-400 hover:text-white">О платформе</a>
+                    <a href="#" class="text-gray-400 hover:text-white">Контакты</a>
+                    <a href="#" class="text-gray-400 hover:text-white">Политика конфиденциальности</a>
+                </div>
+                <p class="mt-8 text-center text-base text-gray-400">&copy; 2025 EduPlatform. Все права защищены.</p>
+            </div>
+        </footer>
+    </main>
+{% endblock %}

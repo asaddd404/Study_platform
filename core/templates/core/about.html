@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}О платформе - EduPlatform{% endblock %}
+
+{% block content %}
+    <header class="bg-white/80 shadow-sm sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="{% url 'core:index' %}" class="flex items-center">
+                    <svg class="h-8 w-8 text-brand-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <span class="ml-2 text-2xl font-bold text-gray-800">EduPlatform</span>
+                </a>
+                <nav class="hidden md:flex space-x-6 items-center">
+                    <a href="{% url 'core:course' %}" class="text-gray-500 hover:text-brand-blue transition-colors">Программа курса</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'core:profile' %}" class="text-gray-500 hover:text-brand-blue transition-colors">Профиль</a>
+                        <form action="{% url 'core:logout' %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-gray-500 hover:text-brand-blue transition-colors">Выйти</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'core:login' %}" class="text-gray-500 hover:text-brand-blue transition-colors">Войти</a>
+                        <a href="{% url 'core:register' %}" class="ml-4 inline-block bg-brand-blue text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-blue-700 transition-transform hover:scale-105">Регистрация</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">О платформе EduPlatform</h1>
+        <p class="text-gray-600 mb-4">
+            EduPlatform — это современная образовательная платформа, созданная для тех, кто хочет улучшить свои навыки речи и письма. Наш курс "Культура речи и стилистика" разработан экспертами-филологами, чтобы помочь вам говорить уверенно, грамотно и убедительно.
+        </p>
+        <p class="text-gray-600 mb-4">
+            Мы предлагаем структурированную программу с модулями, уроками и тестами, которые помогут вам освоить основы стилистики, избавиться от речевых ошибок и научиться создавать профессиональные тексты.
+        </p>
+        <p class="text-gray-600 mb-4">
+            Присоединяйтесь к нам и начните свой путь к совершенству в коммуникации!
+        </p>
+        <a href="{% url 'core:register' %}" class="inline-block bg-brand-blue text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition">Начать обучение</a>
+    </main>
+
+    <footer class="bg-gray-900">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-center space-x-6">
+                <a href="{% url 'core:about' %}" class="text-gray-400 hover:text-white">О платформе</a>
+                <a href="#" class="text-gray-400 hover:text-white">Контакты</a>
+                <a href="#" class="text-gray-400 hover:text-white">Политика конфиденциальности</a>
+            </div>
+            <p class="mt-8 text-center text-base text-gray-400">&copy; 2025 EduPlatform. Все права защищены.</p>
+        </div>
+    </footer>
+{% endblock %}

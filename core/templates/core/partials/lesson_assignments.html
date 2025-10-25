@@ -1,0 +1,21 @@
+<div class="space-y-4">
+    {% for assignment in assignments %}
+        <div class="border-b py-4">
+            <h3 class="text-lg font-semibold">{{ assignment.title }}</h3>
+            <p>{{ assignment.description|safe }}</p>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+                {% if assignment.answer_type == 'essay' %}
+                    <textarea name="answer_text" class="border rounded p-2 w-full" required></textarea>
+                {% elif assignment.answer_type == 'file' %}
+                    <input type="file" name="answer_file" class="border rounded p-2" required>
+                {% elif assignment.answer_type in 'mcq_single,mcq_multi' %}
+                    <p>Тестовые задания в разработке.</p>
+                {% endif %}
+                <button type="submit" class="bg-brand-blue text-white py-2 px-4 rounded-md hover:bg-blue-700 mt-2">Отправить</button>
+            </form>
+        </div>
+    {% endfor %}
+    <p><a href="{% url 'core:course' %}" class="text-brand-blue hover:underline">Вернуться к курсу</a></p>
+</div>

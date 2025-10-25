@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Ресурсы: {{ lesson.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-4">Ресурсы к уроку: {{ lesson.title }}</h1>
+    {% if resources %}
+    <ul class="list-disc pl-5">
+        {% for resource in resources %}
+        <li>
+            <a href="{{ resource.url }}" target="_blank" class="text-blue-500 hover:underline">{{ resource.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Ресурсы для этого урока отсутствуют.</p>
+    {% endif %}
+    <a href="{% url 'core:lesson' lesson.id %}" class="mt-4 inline-block text-blue-500 hover:underline">Вернуться к уроку</a>
+</div>
+{% endblock %}

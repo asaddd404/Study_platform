@@ -1,0 +1,98 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Мой профиль - EduPlatform{% endblock %}
+
+{% block content %}
+    <div class="flex min-h-screen">
+        <aside class="w-80 flex-shrink-0 bg-white border-r border-gray-200">
+            <div class="p-4 border-b">
+                <a href="{% url 'core:index' %}" class="flex items-center">
+                    <svg class="h-8 w-8 text-brand-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <span class="ml-2 text-2xl font-bold text-gray-800">EduPlatform</span>
+                </a>
+            </div>
+            <nav class="p-4">
+                <a href="{% url 'core:course' %}" class="block p-2 text-sm text-gray-600 rounded-md hover:bg-gray-100">Программа курса</a>
+                <a href="{% url 'core:profile' %}" class="block p-2 text-sm text-brand-blue font-semibold bg-blue-50">Мой профиль</a>
+                <form action="{% url 'core:logout' %}" method="post" class="block p-2 text-sm text-gray-600 rounded-md hover:bg-gray-100">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full text-left">Выйти</button>
+                </form>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">Мой профиль</h1>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Личная информация</h2>
+                <form method="post" enctype="multipart/form-data" class="space-y-4">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="bg-brand-blue text-white py-2 px-4 rounded-md hover:bg-blue-700 font-medium">Сохранить</button>
+                </form>
+            </div>
+
+            {% if submissions %}
+                <div class="mt-8 bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Проверочные работы</h2>
+                    {% for submission in submissions %}
+                        <div class="border-b py-4 last:border-b-0">
+                            <p class="mb-1"><strong>Студент:</strong> {{ submission.student.username }}</p>
+                            <p><strong>Задание:</strong> {{ submission.assignment.title }}</p>
+                            
+                            <form method="post" class="mt-4 space-y-4">
+                                {% csrf_token %}
+                                <input type="hidden" name="submission_id" value="{{ submission.id }}">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="score-{{ submission.id }}" class="block text-sm font-medium text-gray-700">Оценка (0-100)</label>
+                                        <input type="number" name="score" id="score-{{ submission.id }}" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring-brand-blue sm:text-sm" value="{{ submission.score|default:'' }}">
+                                    </div>
+                                    <div>
+                                        <label for="status-{{ submission.id }}" class="block text-sm font-medium text-gray-700">Статус</label>
+                                        <select name="status" id="status-{{ submission.id }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring-brand-blue sm:text-sm">
+                                            <option value="pending" {% if submission.status == 'pending' %}selected{% endif %}>В ожидании</option>
+                                            <option value="approved" {% if submission.status == 'approved' %}selected{% endif %}>Одобрено</option>
+                                            <option value="rejected" {% if submission.status == 'rejected' %}selected{% endif %}>Отклонено</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="feedback-{{ submission.id }}" class="block text-sm font-medium text-gray-700">Комментарий</label>
+                                    <textarea name="teacher_feedback" id="feedback-{{ submission.id }}" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring-brand-blue sm:text-sm">{{ submission.teacher_feedback|default:'' }}</textarea>
+                                </div>
+                                <div class="text-right">
+                                    <button type="submit" class="bg-brand-blue text-white py-2 px-4 rounded-md hover:bg-blue-700 text-sm font-medium">Оценить</button>
+                                </div>
+                            </form>
+                            </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mt-8 bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Прогресс обучения</h2>
+                {% if progress %}
+                    <ul class="space-y-2">
+                        {% for prog in progress %}
+                            <li class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                                <div>
+                                    <span class="font-medium text-gray-800">{{ prog.lesson.title }}</span>
+                                    <span class="text-sm text-gray-500"> ({{ prog.lesson.module.title }})</span>
+                                </div>
+                                <span class="text-sm font-medium px-2 py-0.5 rounded-full {% if prog.passed %}bg-green-100 text-green-700{% else %}bg-gray-200 text-gray-700{% endif %}">
+                                    {{ prog.get_status_display }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-gray-600">Прогресс отсутствует.</p>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+{% endblock %}
