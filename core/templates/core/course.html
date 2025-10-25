@@ -4,7 +4,6 @@
 
 {% block content %}
 <div class="flex h-screen">
-    <!-- Левая колонка (20%) - Список модулей -->
     <div class="w-1/5 bg-gray-200 p-4 overflow-y-auto" id="modules-column">
         <h2 class="text-xl font-bold mb-4">Модули</h2>
         {% if modules %}
@@ -35,7 +34,6 @@
         {% endif %}
     </div>
 
-    <!-- Правая колонка (80%) - Содержимое урока -->
     <div class="w-4/5 p-6" id="lesson-content">
         {% if lessons %}
             {% for lesson in lessons %}
@@ -77,9 +75,7 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Скрипт загружен');
@@ -128,4 +124,5 @@
         }
     });
 </script>
+
 {% endblock %}
