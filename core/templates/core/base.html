@@ -1,5 +1,18 @@
-<style>
-        /* Стили для Django Form API, чтобы они выглядели как Tailwind. */
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduPlatform{% endblock %}</title>
+    
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLdcjVHlUI" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+    
+    <style>
+        /* Стили для Django Form API */
         form p {
             margin-bottom: 1rem;
         }
@@ -33,14 +46,13 @@
             box-shadow: 0 0 0 2px #BFDBFE; /* ring-blue-200 */
             outline: none;
         }
-        
-        /* === ИЗМЕНЕНИЕ ЗДЕСЬ ===
-         Этот CSS теперь скрывает ВЕСЬ вспомогательный текст (и для пароля, и для логина)
-        */
         .helptext {
-            display: none;
+            display: block; /* Снова показываем helptext */
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #6B7280; /* text-gray-500 */
         }
-
+        /* .helptext ul { display: none; } */ /* Пока оставим правила паролей видимыми */
         .errorlist {
             color: #DC2626; /* text-red-600 */
             font-size: 0.875rem;
@@ -49,3 +61,8 @@
             padding-left: 0;
         }
     </style>
+</head>
+<body class="bg-gray-100"> {% block content %}
+    {% endblock %}
+</body>
+</html>
