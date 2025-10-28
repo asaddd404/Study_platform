@@ -1,41 +1,36 @@
 {% load static %}
-<div class="bg-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
-    
-    {% if lesson.video_url %}
-        <div class="mb-6 rounded-lg overflow-hidden shadow-md">
-            <div class="aspect-w-16 aspect-h-9">
-                <iframe src="{{ lesson.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full"></iframe>
-            </div>
+<div class="lesson-content-card"> {% if lesson.video_url %}
+        <div class="lesson-video-wrapper">
+            <iframe src="{{ lesson.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
     {% endif %}
 
-    <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ lesson.title }}</h1>
+    <h1>{{ lesson.title }}</h1>
 
-    <div class="prose prose-lg max-w-none text-gray-700 mb-8">
+    <div class="lesson-prose mb-8">
         {{ lesson.content|default:"Описание отсутствует"|safe }}
     </div>
 
-    <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-        <h3 class="text-xl font-semibold text-gray-800 mb-3">Задание</h3>
-        <div class="prose max-w-none text-gray-600">
-            {{ lesson.assignment|default:"Задание для этого урока будет добавлено позже."|safe }}
+    <div class="lesson-assignment">
+        <h3>Задание</h3>
+        <div class="lesson-prose"> {{ lesson.assignment|default:"Задание для этого урока будет добавлено позже."|safe }}
         </div>
     </div>
 
-    <div>
-        <h3 class="text-xl font-semibold text-gray-800 mb-3">Материалы для самообучения</h3>
+    <div class="lesson-resources">
+        <h3>Материалы для самообучения</h3>
         {% if lesson.resources.exists %}
-            <ul class="list-disc pl-5 space-y-1">
+            <ul>
                 {% for resource in lesson.resources.all %}
                     <li>
-                        <a href="{{ resource.url|default:resource.file.url }}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                        <a href="{{ resource.url|default:resource.file.url }}" target="_blank" class="font-medium">
                             {{ resource.title }}
                         </a>
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p class="text-gray-500">Материалы отсутствуют.</p>
+            <p style="color: var(--color-text-muted);">Материалы отсутствуют.</p>
         {% endif %}
     </div>
 </div>
