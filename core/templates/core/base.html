@@ -8,21 +8,20 @@
 
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
 
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script> <script src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
 
     <style>
-        /* Базовые стили для форм Django, чтобы они не ломали вид */
+        /* Минимальные стили для Django {{ form.as_p }} */
         form p {
-            margin-bottom: 1rem; /* mb-4 */
+            margin-bottom: var(--spacing-4); /* Используем переменную */
         }
         form p label {
-            /* Используем класс .form-label из styles.css */
-            /* display: block;
-            margin-bottom: 0.5rem;
+            /* Применяем класс из styles.css */
+            display: block;
+            margin-bottom: var(--spacing-2);
             font-size: 0.875rem;
             font-weight: 500;
-            color: var(--gray-700); */
+            color: var(--color-text);
         }
         form p input[type='text'],
         form p input[type='password'],
@@ -32,38 +31,41 @@
         form p input[type='file'],
         form p textarea,
         form p select {
-            /* Используем класс .form-input из styles.css */
-            /* display: block;
+            /* Применяем классы из styles.css */
+            display: block;
             width: 100%;
             border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--color-border);
             box-shadow: var(--shadow-sm);
-            padding: 0.75rem 1rem; */
+            padding: var(--spacing-3) var(--spacing-4);
+            font-size: 1rem;
+            line-height: 1.5;
+            background-color: var(--color-card);
+            color: var(--color-text);
+            transition: var(--transition);
         }
         form p input:focus,
         form p textarea:focus,
         form p select:focus {
-            /* Стили фокуса определены в styles.css для .form-input:focus */
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
             outline: none;
         }
         .helptext {
-            display: block;
-            margin-top: 0.5rem;
-            font-size: 0.875rem; /* text-sm */
-            color: var(--text-color-secondary);
+            /* Скрываем helptext по умолчанию, как ты просил */
+            display: none;
         }
-        /* Чтобы скрыть правила пароля, можно раскомментировать */
-        /* .helptext ul { display: none; } */
         .errorlist {
-            color: #DC2626; /* Яркий красный */
-            font-size: 0.875rem; /* text-sm */
-            margin-top: 0.25rem; /* mt-1 */
+            color: var(--color-error); /* Используем переменную */
+            font-size: 0.875rem;
+            margin-top: var(--spacing-1);
             list-style-type: none;
             padding-left: 0;
         }
     </style>
 </head>
-<body> {% block content %}
+<body>
+    {% block content %}
     {% endblock %}
 </body>
 </html>
