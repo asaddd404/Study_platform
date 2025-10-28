@@ -4,25 +4,28 @@
 {% block title %}Регистрация - EduPlatform{% endblock %}
 
 {% block content %}
-    <div style="min-height: 100vh;" class="flex items-center justify-center py-12 px-4"> <div class="card max-w-md w-full"> <a href="{% url 'core:index' %}" class="flex items-center justify-center mb-6">
-                <svg class="h-8 w-8" style="color: var(--brand-blue);" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+    <div style="min-height: 100vh;" class="flex items-center justify-center py-12 px-4">
+        <div class="card max-w-md w-full"> <a href="{% url 'core:index' %}" class="flex items-center justify-center mb-8">
+                <svg style="height: 2rem; width: 2rem; color: var(--color-primary);" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                 </svg>
-                <span style="margin-left: 0.5rem;" class="text-2xl font-bold">EduPlatform</span> </a>
+                <span style="margin-left: var(--spacing-3);" class="text-2xl font-bold">EduPlatform</span>
+            </a>
 
             <h2 class="text-2xl font-bold text-center mb-6">Создание аккаунта</h2>
 
             <form method="post">
                 {% csrf_token %}
-
                 {{ form.as_p }}
 
-                <button type="submit" class="btn btn-primary btn-block mt-4">
+                <button type="submit" class="btn btn-primary btn-block mt-6">
                     Зарегистрироваться
                 </button>
             </form>
 
-            <p class="text-sm text-center mt-4" style="color: var(--text-color-secondary);"> Уже есть аккаунт? <a href="{% url 'core:login' %}" class="font-semibold">Войти</a> </p>
+            <p class="text-sm text-center mt-6" style="color: var(--color-text-muted);">
+                Уже есть аккаунт? <a href="{% url 'core:login' %}" class="font-semibold">Войти</a>
+            </p>
         </div>
     </div>
 {% endblock %}
