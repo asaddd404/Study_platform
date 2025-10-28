@@ -4,28 +4,27 @@
 {% block title %}Вход - EduPlatform{% endblock %}
 
 {% block content %}
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div class="bg-white p-8 rounded-xl shadow-xl max-w-md w-full space-y-6">
-            
-            <a href="{% url 'core:index' %}" class="flex items-center justify-center space-x-2">
-                <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+     <div style="min-height: 100vh;" class="flex items-center justify-center py-12 px-4">
+        <div class="card max-w-md w-full"> <a href="{% url 'core:index' %}" class="flex items-center justify-center mb-8">
+                 <svg style="height: 2rem; width: 2rem; color: var(--color-primary);" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                 </svg>
-                <span class="ml-2 text-2xl font-bold text-gray-800">EduPlatform</span>
+                <span style="margin-left: var(--spacing-3);" class="text-2xl font-bold">EduPlatform</span>
             </a>
 
-            <h1 class="text-2xl font-bold text-gray-900 text-center">Вход в аккаунт</h1>
-            
-            <form method="post" class="space-y-4">
+            <h1 class="text-2xl font-bold text-center mb-6">Вход в аккаунт</h1>
+
+            <form method="post">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition font-medium text-base">
+
+                <button type="submit" class="btn btn-primary btn-block mt-6">
                     Войти
                 </button>
             </form>
-            
-            <p class="mt-4 text-center text-sm text-gray-600">
-                Нет аккаунта? <a href="{% url 'core:register' %}" class="font-medium text-blue-600 hover:underline">Зарегистрируйтесь</a>
+
+            <p class="text-sm text-center mt-6" style="color: var(--color-text-muted);">
+                Нет аккаунта? <a href="{% url 'core:register' %}" class="font-semibold">Зарегистрируйтесь</a>
             </p>
 
         </div>
