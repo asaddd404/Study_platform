@@ -4,49 +4,47 @@
 {% block title %}Программа курса{% endblock %}
 
 {% block content %}
-<div class="flex h-screen bg-gray-100">
-    
-    <aside class="w-80 flex-shrink-0 bg-white border-r border-gray-200 h-screen overflow-y-auto sticky top-0">
-        <div class="p-4 border-b h-16 flex items-center">
-            <a href="{% url 'core:index' %}" class="flex items-center space-x-2">
-                <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+<div class="course-layout"> <aside class="course-sidebar">
+        <div class="course-sidebar-header">
+            <a href="{% url 'core:index' %}" class="flex items-center space-x-2" style="text-decoration: none;">
+                <svg style="height: 1.75rem; width: 1.75rem; color: var(--color-primary);" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                 </svg>
-                <span class="text-2xl font-bold text-gray-900">EduPlatform</span>
+                <span class="text-xl font-bold" style="color: var(--color-text);">EduPlatform</span>
             </a>
         </div>
-        
-        <nav class="p-4 space-y-2">
+
+        <nav>
             {% for module in modules %}
             <div x-data="{ open: false }">
-                <button @click="open = !open" class="w-full flex justify-between items-center p-3 rounded-lg font-semibold text-gray-800 hover:bg-gray-100 focus:outline-none">
+                <button @click="open = !open" :class="{ 'open': open }" class="module-toggle">
                     <span>{{ module.title }}</span>
-                    <svg :class="{'rotate-90': open}" class="w-4 h-4 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                 </button>
-                
-                <ul x-show="open" class="pl-4 mt-1 space-y-1">
+
+                <ul x-show="open" :class="{ 'open': open }" class="lesson-list">
                     {% for lesson in lessons %}
                         {% if lesson.module_id == module.id %}
                         <li>
-                            <button 
+                            <button
                                 hx-get="{% url 'core:lesson' lesson.id %}"
                                 hx-target="#lesson-main-content"
                                 hx-swap="innerHTML"
-                                class="w-full text-left p-2 rounded-md text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                onclick="setActiveLesson(this)" {# Добавляем JS для подсветки #}
                             >
                                 {{ lesson.title }}
                             </button>
                         </li>
                         {% endif %}
                     {% endfor %}
-                    
+
                     {% if module.tests.all %}
-                        <li>
+                        <li class="test-link">
                             <button
                                 hx-get="{% url 'core:test_module' module.id %}"
                                 hx-target="#lesson-main-content"
                                 hx-swap="innerHTML"
-                                class="w-full text-left p-2 rounded-md font-semibold text-blue-600 hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                onclick="setActiveLesson(this)" {# Добавляем JS для подсветки #}
                             >
                                 Итоговый тест
                             </button>
@@ -58,12 +56,28 @@
         </nav>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto h-screen" id="lesson-main-content">
-        <div class="bg-white p-10 rounded-xl shadow-lg h-full flex flex-col items-center justify-center">
-            <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l-3 3m0 0l-3-3m3 3v6m0-13a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <h2 class="text-2xl font-semibold text-gray-700">Добро пожаловать!</h2>
-            <p class="text-gray-500 mt-2">Выберите модуль и урок из меню слева, чтобы начать обучение.</p>
+    <main class="course-content" id="lesson-main-content">
+        <div class="card flex flex-col items-center justify-center text-center" style="min-height: 300px;"> <svg style="width: 4rem; height: 4rem; color: var(--color-border);" class="mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 10l-3 3m0 0l-3-3m3 3v6m0-13a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <h2 class="text-2xl font-semibold mb-2" style="color: var(--color-text);">Добро пожаловать!</h2>
+            <p class="text-lg" style="color: var(--color-text-muted);">Выберите модуль и урок из меню слева, чтобы начать обучение.</p>
         </div>
     </main>
 </div>
+
+<script>
+    // Простой JS для подсветки активного урока
+    function setActiveLesson(buttonElement) {
+        // Убираем класс 'active' у всех кнопок уроков/тестов
+        document.querySelectorAll('.lesson-list button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        // Добавляем класс 'active' нажатой кнопке
+        buttonElement.classList.add('active');
+    }
+
+    // Дополнительно: Открывать первый модуль при загрузке (если нужно)
+    document.addEventListener('alpine:init', () => {
+        // Можно добавить логику, если AlpineJS используется сложнее
+    });
+</script>
 {% endblock %}
