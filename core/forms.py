@@ -1,22 +1,60 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm # Импортируем базовую форму
-from .models import User # Импортируем нашу модель
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from .models import User
 
-# 
-# ВОТ НОВАЯ ФОРМА
-#
 class CustomUserCreationForm(UserCreationForm):
+    """
+    Кастомная форма регистрации.
+    Мы не переопределяем поля паролей, чтобы сохранить всю встроенную 
+    валидацию Django, но мы скроем 'help_text' в HTML-шаблоне.
+    """
     class Meta(UserCreationForm.Meta):
-        model = User # Указываем, что наша модель - это core.User
-        fields = ('username', 'email') # Указываем поля для регистрации (можете добавить 'first_name', 'last_name' и т.д.)
+        model = User
+        fields = ("username", "email")
 
-#
-# Ваша существующая форма остается ниже
-#
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Применяем CSS-классы из styles.css к полям
+        self.fields['username'].widget.attrs.update({'class': 'form-input'})
+        self.fields['email'].widget.attrs.update({'class': 'form-input'})
+        self.fields['password'].widget.attrs.update({'class': 'form-input'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-input'})
+        
+        # Меняем лейблы
+        self.fields['username'].label = "Логин (Имя пользователя)"
+        self.fields['email'].label = "Email"
+        self.fields['password'].label = "Пароль"
+        self.fields['password2'].label = "Подтверждение пароля"
+
+
+class CustomAuthenticationForm(AuthenticationForm):
+    """
+    Кастомная форма входа (логина).
+    Меняет 'Username' на 'Логин' и добавляет CSS-классы.
+    """
+    username = forms.CharField(
+        label='Логин',
+        widget=forms.TextInput(attrs={'class': 'form-input', 'autofocus': True})
+    )
+    password = forms.CharField(
+        label='Пароль',
+        strip=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-input', 'autocomplete': 'current-password'})
+    )
+
 class ProfileForm(forms.ModelForm):
+    """
+    Форма профиля (добавляем CSS-классы).
+    """
     class Meta:
         model = User
         fields = ['username', 'email', 'avatar', 'bio', 'phone', 'first_name', 'last_name']
         widgets = {
-            'bio': forms.Textarea(attrs={'rows': 4}),
+            'username': forms.TextInput(attrs={'class': 'form-input'}),
+            'email': forms.EmailInput(attrs={'class': 'form-input'}),
+            'avatar': forms.FileInput(attrs={'class': 'form-input'}),
+            'bio': forms.Textarea(attrs={'class': 'form-input', 'rows': 4}),
+            'phone': forms.TextInput(attrs={'class': 'form-input'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-input'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-input'}),
         }

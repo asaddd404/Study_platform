@@ -1,22 +1,49 @@
 {% extends 'core/base.html' %}
 {% load static %}
-
 {% block title %}Вход - EduPlatform{% endblock %}
 
 {% block content %}
      <div class="form-container">
         <div class="card form-card">
             <a href="{% url 'core:index' %}" class="logo">
-                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                </svg>
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
                 <span>EduPlatform</span>
             </a>
             <h1>Вход в аккаунт</h1>
             
             <form method="post">
                 {% csrf_token %}
-                {{ form.as_p }}
+                
+                {% if form.non_field_errors %}
+                    <div class="form-errorlist" style="margin-bottom: var(--spacing-4);">
+                        {% for error in form.non_field_errors %}
+                            <p style="margin-bottom: 0;">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
+                    {{ form.username }} {% if form.username.errors %}
+                        <div class="form-errorlist">
+                            {% for error in form.username.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+                    {{ form.password }} {% if form.password.errors %}
+                        <div class="form-errorlist">
+                            {% for error in form.password.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
                 <button type="submit" class="btn btn-primary btn-block" style="margin-top: var(--spacing-6);">
                     Войти
                 </button>

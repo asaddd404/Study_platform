@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from .forms import CustomAuthenticationForm # <-- 1. ИМПОРТИРУЕМ НАШУ ФОРМУ
 
 app_name = 'core'
 
@@ -8,7 +9,13 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('about/', views.about, name='about'),
     path('register/', views.register, name='register'),
-    path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
+    
+    # 2. ИСПРАВЛЯЕМ ССЫЛКУ НА ВХОД:
+    path('login/', auth_views.LoginView.as_view(
+        template_name='core/login.html',
+        authentication_form=CustomAuthenticationForm # <-- 3. ИСПОЛЬЗУЕМ НАШУ ФОРМУ
+    ), name='login'),
+    
     path('logout/', views.custom_logout, name='logout'),
     path('course/', views.course, name='course'),
     path('lessons/<uuid:lesson_id>/', views.lesson, name='lesson'),

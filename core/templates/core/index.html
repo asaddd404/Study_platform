@@ -1,8 +1,6 @@
 {% extends 'core/base.html' %}
 {% load static %}
-
 {% block title %}Онлайн-курс: Культура речи и стилистика{% endblock %}
-
 {% block content %}
     <header class="header">
         <div class="container">
@@ -23,13 +21,11 @@
             </nav>
         </div>
     </header>
-
     <main>
         <section class="section section-bg-white hero-section">
             <div class="container">
                 <h1>Ваша речь — ваш <span style="color: var(--color-primary);">успех</span>.</h1>
                 <p>Превратите слова в свой главный инструмент. Наш курс научит вас говорить и писать уверенно, грамотно и убедительно.</p>
-                
                 {% if user.is_authenticated %}
                     <a href="{% url 'core:profile' %}" class="btn btn-primary btn-lg">
                         Перейти в профиль
@@ -39,10 +35,9 @@
                         Начать обучение
                     </a>
                 {% endif %}
-                
             </div>
         </section>
-
+        
         <section class="section section-bg-gray">
             <div class="container">
                 <h2 class="section-title">Чему вы научитесь на курсе?</h2>
@@ -66,7 +61,6 @@
                 </div>
             </div>
         </section>
-
         <section class="section section-bg-white">
             <div class="container">
                 <h2 class="section-title">Ваши преподаватели — эксперты-филологи</h2>
@@ -86,7 +80,6 @@
                 </div>
             </div>
         </section>
-
         <section class="section section-bg-gray">
             <div class="container">
                 <h2 class="section-title">Программа курса: от основ до мастерства</h2>
@@ -110,7 +103,6 @@
                 <a href="{% url 'core:course' %}" class="view-program-link">Посмотреть полную программу &rarr;</a>
             </div>
         </section>
-
         <footer class="footer">
             <div class="container">
                 <nav class="footer-nav">
