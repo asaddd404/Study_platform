@@ -10,6 +10,7 @@ from .forms import ProfileForm, CustomUserCreationForm # <-- ИМПОРТИРУ�
 from django.utils import timezone
 from .models import Course, Module, Lesson, Resource, Test, TestSubmission, TestAnswer, Progress, User
 from django.http import JsonResponse
+from .forms import RegisterForm
 
 def lesson_list_api(request):
     # (Этот код без изменений)
@@ -31,27 +32,15 @@ def about(request):
     return render(request, 'core/about.html')
 
 def register(request):
-    #
-    # ИСПРАВЛЕНИЕ ЛОГИКИ:
-    # Если пользователь уже залогинен, не показываем ему
-    # форму регистрации, а отправляем в профиль.
-    #
-    if request.user.is_authenticated:
-        return redirect('core:profile')
-    
     if request.method == 'POST':
-        # ИСПРАВЛЕНИЕ: Используем CustomUserCreationForm
-        form = CustomUserCreationForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.role = 'student' # Устанавливаем роль по умолчанию
-            user.save()
-            login(request, user)
-            return redirect('core:profile')
+            form.save()
+            return redirect('login')
     else:
-        # ИСПРАВЛЕНИЕ: Используем CustomUserCreationForm
-        form = CustomUserCreationForm()
-    return render(request, 'core/register.html', {'form': form})
+        form = RegisterForm()  # ← Без request.POST!
+
+    return render(request, 'register.html', {'form': form})
 
 @login_required
 def course(request):

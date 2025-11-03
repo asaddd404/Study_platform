@@ -2,6 +2,26 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User
 
+class RegisterForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+    password2 = forms.CharField(widget=forms.PasswordInput, label="Повторите пароль")
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Теперь безопасно:
+        self.fields['password'].widget.attrs.update({'placeholder': 'Пароль'})
+        self.fields['password2'].widget.attrs.update({'placeholder': 'Повторите'})
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('password') != cleaned_data.get('password2'):
+            self.add_error('password2', 'Пароли не совпадают')
+        return cleaned_data
+
 class CustomUserCreationForm(UserCreationForm):
     """
     Кастомная форма регистрации.
