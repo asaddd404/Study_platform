@@ -21,19 +21,19 @@
         </button>
     </div>
 
-    <div x-show="tab === 'description'">
+    <div class="tab-content" :class="{ 'active': tab === 'description' }" x-show="tab === 'description'">
         <div class="lesson-prose">
             {{ lesson.content|default:"Описание отсутствует"|safe|linebreaks }}
         </div>
     </div>
 
-    <div x-show="tab === 'assignment'" style="display: none;">
+    <div class="tab-content" x-show="tab === 'assignment'" style="display: none;">
         <div class="lesson-prose">
             {{ lesson.assignment|default:"Задание для этого урока будет добавлено позже."|safe|linebreaks }}
         </div>
     </div>
 
-    <div x-show="tab === 'resources'" style="display: none;">
+    <div class="tab-content" x-show="tab === 'resources'" style="display: none;">
         {% if lesson.resources.exists %}
             <ul class="lesson-prose" style="list-style: none; padding-left: 0;">
                 {% for resource in lesson.resources.all %}

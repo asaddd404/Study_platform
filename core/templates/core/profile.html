@@ -40,7 +40,7 @@
             <div class="card">
                 <h2 style="margin-bottom: var(--spacing-6);">Прогресс обучения</h2>
                 {% if progress %}
-                    <ul class="profile-progress-list" style="list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: var(--spacing-3);">
+                    <ul class="profile-progress-list">
                         {% for prog in progress %}
                             <li>
                                 <div>
@@ -59,6 +59,44 @@
             </div>
         {% endif %}
         
-        </main>
+        {% if user.role == 'teacher' and submissions %}
+            <div class="card" style="margin-top: var(--spacing-8);">
+                <h2 style="margin-bottom: var(--spacing-6);">Проверочные работы</h2>
+                {% for submission in submissions %}
+                    <div style="border-bottom: 1px solid var(--color-border); padding-bottom: var(--spacing-4); margin-bottom: var(--spacing-4);">
+                         <p><strong>Студент:</strong> {{ submission.student.username }}</p>
+                         <p><strong>Задание:</strong> {{ submission.assignment.title }}</p>
+                        
+                        <form method="post" style="margin-top: var(--spacing-4);">
+                            {% csrf_token %}
+                            <input type="hidden" name="submission_id" value="{{ submission.id }}">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4);">
+                                <div>
+                                    <label for="score-{{ submission.id }}" class="form-label">Оценка (0-100)</label>
+                                    <input type="number" name="score" id="score-{{ submission.id }}" min="0" max="100" class="form-input" value="{{ submission.score|default:'' }}">
+                                </div>
+                                <div>
+                                    <label for="status-{{ submission.id }}" class="form-label">Статус</label>
+                                    <select name="status" id="status-{{ submission.id }}" class="form-input"> <option value="pending" {% if submission.status == 'pending' %}selected{% endif %}>В ожидании</option>
+                                        <option value="approved" {% if submission.status == 'approved' %}selected{% endif %}>Одобрено</option>
+                                        <option value="rejected" {% if submission.status == 'rejected' %}selected{% endif %}>Отклонено</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="margin-top: var(--spacing-4);">
+                                <label for="feedback-{{ submission.id }}" class="form-label">Комментарий</label>
+                                <textarea name="teacher_feedback" id="feedback-{{ submission.id }}" rows="3" class="form-input">{{ submission.teacher_feedback|default:'' }}</textarea>
+                            </div>
+                            <div style="text-align: right; margin-top: var(--spacing-4);">
+                                <button type="submit" class="btn btn-primary btn-sm">Оценить</button>
+                            </div>
+                        </form>
+                    </div>
+                {% empty %}
+                     <p style="margin-bottom: 0;">Нет работ для проверки.</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </main>
 </div>
 {% endblock %}

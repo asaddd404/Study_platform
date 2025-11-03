@@ -17,7 +17,7 @@
         {% for question in test.questions.all %}
             <div style="margin-bottom: var(--spacing-4);">
                 <label for="answer_{{ question.id }}" style="display: block; margin-bottom: var(--spacing-2); font-weight: 500;">{{ forloop.counter }}. {{ question.text }}</label>
-                <input type="text" name="answer_{{ question.id }}" id="answer_{{ question.id }}" class="form-input" placeholder="Ваш ответ" required>
+                <input type="text" name="answer_{{ question.id }}" id="answer_{{ question.id }}" placeholder="Ваш ответ" required>
             </div>
         {% endfor %}
         

@@ -8,13 +8,5 @@
             {{ message|default:"Для доступа к этому тесту необходимо завершить все уроки модуля." }}
         {% endif %}
     </p>
-    <button 
-        class="btn btn-primary" 
-        style="margin-top: var(--spacing-6);"
-        hx-get="{% url 'core:course' %}"
-        hx-target="body" 
-        hx-swap="innerHTML"
-        hx-push-url="true">
-        Вернуться к курсу
-    </button>
+    <a href="{% url 'core:course' %}" class="btn btn-primary" style="margin-top: var(--spacing-6);">Вернуться к курсу</a>
 </div>
