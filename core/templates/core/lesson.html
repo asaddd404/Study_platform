@@ -1,5 +1,7 @@
 {% load static %}
-<div class="lesson-content-card"> {% if lesson.video_url %}
+<div class="lesson-content-card" x-data="{ tab: 'description' }">
+
+    {% if lesson.video_url %}
         <div class="lesson-video-wrapper">
             <iframe src="{{ lesson.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
@@ -7,30 +9,48 @@
 
     <h1>{{ lesson.title }}</h1>
 
-    <div class="lesson-prose mb-8">
-        {{ lesson.content|default:"Описание отсутствует"|safe }}
+    <div class="tab-buttons">
+        <button class="tab-button" @click="tab = 'description'" :class="{ 'active': tab === 'description' }">
+            Описание
+        </button>
+        <button class="tab-button" @click="tab = 'assignment'" :class="{ 'active': tab === 'assignment' }">
+            Задание
+        </button>
+        <button class="tab-button" @click="tab = 'resources'" :class="{ 'active': tab === 'resources' }">
+            Материал для самостоятельного изучения
+        </button>
     </div>
 
-    <div class="lesson-assignment">
-        <h3>Задание</h3>
-        <div class="lesson-prose"> {{ lesson.assignment|default:"Задание для этого урока будет добавлено позже."|safe }}
+    <div x-show="tab === 'description'">
+        <div class="lesson-prose">
+            {{ lesson.content|default:"Описание отсутствует"|safe|linebreaks }}
         </div>
     </div>
 
-    <div class="lesson-resources">
-        <h3>Материалы для самообучения</h3>
+    <div x-show="tab === 'assignment'" style="display: none;">
+        <div class="lesson-prose">
+            {{ lesson.assignment|default:"Задание для этого урока будет добавлено позже."|safe|linebreaks }}
+        </div>
+    </div>
+
+    <div x-show="tab === 'resources'" style="display: none;">
         {% if lesson.resources.exists %}
-            <ul>
+            <ul class="lesson-prose" style="list-style: none; padding-left: 0;">
                 {% for resource in lesson.resources.all %}
                     <li>
-                        <a href="{{ resource.url|default:resource.file.url }}" target="_blank" class="font-medium">
-                            {{ resource.title }}
+                        <a href="{% if resource.url %}{{ resource.url }}{% elif resource.file %}{{ resource.file.url }}{% else %}#{% endif %}" target="_blank" class="font-semibold" style="text-decoration: none;">
+                            🔗 {{ resource.title }}
                         </a>
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p style="color: var(--color-text-muted);">Материалы отсутствуют.</p>
+            <p style="color: var(--color-text-muted); margin-bottom: 0;">Материалы отсутствуют.</p>
         {% endif %}
     </div>
+
 </div>
+
+<script>
+    document.dispatchEvent(new CustomEvent('alpine:init'));
+</script>

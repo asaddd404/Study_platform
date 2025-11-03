@@ -6,7 +6,6 @@
     --color-primary: #2563EB; /* Синий */
     --color-primary-dark: #1D4ED8; /* Темно-синий для hover */
     --color-primary-light: #EFF6FF; /* Очень светлый синий */
-    --color-secondary: #4B5563; /* Темно-серый */
     --color-text: #1F2937; /* Основной текст (почти черный) */
     --color-text-muted: #6B7280; /* Приглушенный текст */
     --color-background: #F9FAFB; /* Очень светлый серый фон */
@@ -15,23 +14,17 @@
     --color-success: #10B981; /* Зеленый */
     --color-success-light: #D1FAE5;
     --color-error: #EF4444; /* Красный */
+    --color-footer-bg: #111827; /* Темный фон футера */
+    --color-footer-text: #9CA3AF; /* Серый текст футера */
+    --color-footer-link-hover: #FFFFFF; /* Белый для hover ссылок в футере */
 
     /* Шрифты */
     --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
     /* Размеры и Отступы */
-    --spacing-1: 0.25rem; /* 4px */
-    --spacing-2: 0.5rem;  /* 8px */
-    --spacing-3: 0.75rem; /* 12px */
-    --spacing-4: 1rem;   /* 16px */
-    --spacing-5: 1.25rem; /* 20px */
-    --spacing-6: 1.5rem;  /* 24px */
-    --spacing-8: 2rem;   /* 32px */
-    --spacing-10: 2.5rem; /* 40px */
-    --spacing-12: 3rem;  /* 48px */
-    --spacing-16: 4rem;  /* 64px */
-    --spacing-24: 6rem;  /* 96px */
-    --spacing-32: 8rem;  /* 128px */
+    --spacing-1: 0.25rem; --spacing-2: 0.5rem; --spacing-3: 0.75rem; --spacing-4: 1rem;
+    --spacing-5: 1.25rem; --spacing-6: 1.5rem; --spacing-8: 2rem; --spacing-10: 2.5rem;
+    --spacing-12: 3rem; --spacing-16: 4rem; --spacing-20: 5rem; --spacing-24: 6rem;
 
     /* Прочее */
     --border-radius: 0.5rem; /* 8px */
@@ -42,500 +35,188 @@
     --transition: all 0.2s ease-in-out;
 }
 
-/* --- Сброс стилей и Базовые настройки --- */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+/* --- Сброс и База --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-family-sans); line-height: 1.6; color: var(--color-text); background-color: var(--color-background); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+a { color: var(--color-primary); text-decoration: none; transition: var(--transition); }
+a:hover { color: var(--color-primary-dark); text-decoration: underline; }
+img { max-width: 100%; height: auto; display: block; }
+h1, h2, h3, h4 { color: var(--color-text); margin-bottom: 0.75em; font-weight: 700; line-height: 1.3; }
+h1 { font-size: 3rem; letter-spacing: -0.025em; }
+h2 { font-size: 2.25rem; }
+h3 { font-size: 1.875rem; }
+h4 { font-size: 1.25rem; }
+p { margin-bottom: var(--spacing-4); color: var(--color-text-muted); }
 
-body {
-    font-family: var(--font-family-sans);
-    line-height: 1.6;
-    color: var(--color-text);
-    background-color: var(--color-background);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-    color: var(--color-primary);
-    text-decoration: none;
-    transition: var(--transition);
-}
-a:hover {
-    color: var(--color-primary-dark);
-    text-decoration: underline;
-}
-
-img {
-    max-width: 100%;
-    height: auto;
-    display: block; /* Убирает лишний отступ снизу */
-}
-
-h1, h2, h3, h4, h5, h6 {
-    color: var(--color-text);
-    margin-bottom: 0.75em;
-    font-weight: 600;
-    line-height: 1.3;
-}
-h1 { font-size: 2.5rem; /* ~40px */ }
-h2 { font-size: 2rem;   /* ~32px */ }
-h3 { font-size: 1.5rem; /* ~24px */ }
-h4 { font-size: 1.25rem;/* ~20px */ }
-
-p {
-    margin-bottom: var(--spacing-4);
-    color: var(--color-text-muted); /* Текст параграфов по умолчанию приглушенный */
-}
-
-ul, ol {
-    margin-bottom: var(--spacing-4);
-    padding-left: var(--spacing-5);
-}
-li {
-    margin-bottom: var(--spacing-2);
-}
-
-/* --- Утилиты --- */
+/* --- Контейнер --- */
 .container {
-    max-width: 1280px; /* Шире контейнер */
+    max-width: 1280px;
     margin-left: auto;
     margin-right: auto;
     padding-left: var(--spacing-6);
     padding-right: var(--spacing-6);
 }
+@media (max-width: 768px) {
+    .container { padding-left: var(--spacing-4); padding-right: var(--spacing-4); }
+}
 
-.text-center { text-align: center; }
-.font-bold { font-weight: 700; }
-.font-semibold { font-weight: 600; }
-.font-medium { font-weight: 500; }
-.text-sm { font-size: 0.875rem; }
-.text-lg { font-size: 1.125rem; }
-.text-xl { font-size: 1.25rem; }
-.text-2xl { font-size: 1.5rem; }
-.text-3xl { font-size: 1.875rem; }
-.text-4xl { font-size: 2.25rem; }
-
-/* Отступы (примеры, добавь больше по аналогии) */
-.mb-2 { margin-bottom: var(--spacing-2); }
-.mb-4 { margin-bottom: var(--spacing-4); }
-.mb-6 { margin-bottom: var(--spacing-6); }
-.mb-8 { margin-bottom: var(--spacing-8); }
-.mt-2 { margin-top: var(--spacing-2); }
-.mt-4 { margin-top: var(--spacing-4); }
-.mt-6 { margin-top: var(--spacing-6); }
-.mt-8 { margin-top: var(--spacing-8); }
-.mt-10 { margin-top: var(--spacing-10); }
-.mt-16 { margin-top: var(--spacing-16); }
-
-.p-4 { padding: var(--spacing-4); }
-.p-6 { padding: var(--spacing-6); }
-.p-8 { padding: var(--spacing-8); }
-.py-12 { padding-top: var(--spacing-12); padding-bottom: var(--spacing-12); }
-.py-16 { padding-top: var(--spacing-16); padding-bottom: var(--spacing-16); }
-.py-24 { padding-top: var(--spacing-24); padding-bottom: var(--spacing-24); }
-
-/* Flexbox */
-.flex { display: flex; }
-.inline-flex { display: inline-flex; }
-.items-center { align-items: center; }
-.justify-center { justify-content: center; }
-.justify-between { justify-content: space-between; }
-.space-x-2 > * + * { margin-left: var(--spacing-2); }
-.space-x-4 > * + * { margin-left: var(--spacing-4); }
-.space-x-6 > * + * { margin-left: var(--spacing-6); }
-.space-y-2 > * + * { margin-top: var(--spacing-2); }
-.space-y-4 > * + * { margin-top: var(--spacing-4); }
-.space-y-6 > * + * { margin-top: var(--spacing-6); }
-
-/* Grid (очень базовая) */
-.grid { display: grid; }
-.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.gap-4 { gap: var(--spacing-4); }
-.gap-6 { gap: var(--spacing-6); }
-.gap-8 { gap: var(--spacing-8); }
-
-/* Прочее */
-.rounded { border-radius: var(--border-radius); }
-.rounded-full { border-radius: 9999px; }
-.shadow-sm { box-shadow: var(--shadow-sm); }
-.shadow-md { box-shadow: var(--shadow-md); }
-.shadow-lg { box-shadow: var(--shadow-lg); }
-.shadow-xl { box-shadow: var(--shadow-xl); }
-.w-full { width: 100%; }
-.max-w-md { max-width: 28rem; }
-.max-w-xl { max-width: 36rem; }
-.max-w-4xl { max-width: 56rem; }
-.max-w-7xl { max-width: 80rem; }
-.mx-auto { margin-left: auto; margin-right: auto; }
-.hidden { display: none; }
-.block { display: block; }
-.inline-block { display: inline-block; }
-
-/* --- Компоненты --- */
-
-/* Шапка (Header) */
+/* --- Шапка --- */
 .header {
     background-color: rgba(255, 255, 255, 0.9);
     box-shadow: var(--shadow-sm);
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    backdrop-filter: blur(8px); /* Эффект размытия, если поддерживается */
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(8px);
 }
-.header .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 4.5rem; /* Выше шапка */
-}
-.header .logo {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-}
-.header .logo svg {
-    height: 2rem; /* 32px */
-    width: 2rem;
-    color: var(--color-primary);
-}
-.header .logo span {
-    margin-left: var(--spacing-3);
-    font-size: 1.5rem; /* text-2xl */
-    font-weight: 700;
-    color: var(--color-text);
-}
-.header nav a {
-    color: var(--color-text-muted);
-    font-weight: 500;
-    transition: var(--transition);
-}
-.header nav a:hover {
-    color: var(--color-primary);
-    text-decoration: none;
-}
-.header nav form button {
-    background: none;
-    border: none;
-    color: var(--color-text-muted);
-    font-weight: 500;
-    cursor: pointer;
-    transition: var(--transition);
-    font-size: 1rem;
-}
-.header nav form button:hover {
-    color: var(--color-primary);
-}
+.header .container { display: flex; justify-content: space-between; align-items: center; height: 4.5rem; }
+.logo { display: flex; align-items: center; text-decoration: none; }
+.logo svg { height: 2rem; width: 2rem; color: var(--color-primary); }
+.logo span { margin-left: var(--spacing-3); font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
+.header-nav { display: flex; align-items: center; gap: var(--spacing-6); }
+.header-nav a { color: var(--color-text-muted); font-weight: 500; }
+.header-nav a:hover { color: var(--color-primary); text-decoration: none; }
+.header-nav form { display: inline; }
+.header-nav form button { background: none; border: none; color: var(--color-text-muted); font-weight: 500; cursor: pointer; font-size: 1rem; padding: 0; }
+.header-nav form button:hover { color: var(--color-primary); }
 
+/* --- Кнопки --- */
+.btn { display: inline-block; padding: var(--spacing-3) var(--spacing-6); border: 1px solid transparent; border-radius: var(--border-radius); font-weight: 500; text-align: center; cursor: pointer; transition: var(--transition); font-size: 1rem; line-height: 1.5; }
+.btn:hover { text-decoration: none; transform: translateY(-1px); }
+.btn-primary { background-color: var(--color-primary); color: white; border-color: var(--color-primary); }
+.btn-primary:hover { background-color: var(--color-primary-dark); border-color: var(--color-primary-dark); color: white; box-shadow: var(--shadow-md); }
+.btn-lg { padding: var(--spacing-4) var(--spacing-8); font-size: 1.125rem; }
+.btn-sm { padding: var(--spacing-2) var(--spacing-4); font-size: 0.875rem; }
+.btn-block { display: block; width: 100%; }
 
-/* Кнопки */
-.btn {
-    display: inline-block;
-    padding: var(--spacing-3) var(--spacing-6); /* 12px 24px */
-    border: none;
-    border-radius: var(--border-radius);
-    font-weight: 500;
-    text-align: center;
-    cursor: pointer;
-    transition: var(--transition);
-    font-size: 1rem;
-    line-height: 1.5;
-}
-.btn:hover {
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-}
-.btn-primary {
-    background-color: var(--color-primary);
-    color: white;
-}
-.btn-primary:hover {
-    background-color: var(--color-primary-dark);
-    color: white;
-}
-.btn-secondary {
-    background-color: var(--color-card);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
-}
-.btn-secondary:hover {
-    background-color: var(--color-background);
-}
-.btn-block {
-    display: block;
-    width: 100%;
-}
-.btn-sm { /* Маленькая кнопка */
-    padding: var(--spacing-2) var(--spacing-4);
-    font-size: 0.875rem;
-}
+/* --- Карточки --- */
+.card { background-color: var(--color-card); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); padding: var(--spacing-8); }
 
-/* Карточки */
-.card {
-    background-color: var(--color-card);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg); /* Заметнее тень */
-    padding: var(--spacing-8); /* Больше отступы */
-    overflow: hidden; /* На случай, если что-то вылезет */
-}
-.card-hover { /* Карточка с эффектом при наведении */
-    transition: var(--transition);
-}
-.card-hover:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl);
-}
+/* --- Формы (для Логина/Регистрации) --- */
+.form-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: var(--spacing-4); }
+.form-card { max-width: 28rem; width: 100%; padding: var(--spacing-10); } /* 40px padding */
+.form-card .logo { justify-content: center; margin-bottom: var(--spacing-8); }
+.form-card h1 { text-align: center; margin-bottom: var(--spacing-8); font-size: 1.875rem; }
+.form-card p { text-align: center; margin-top: var(--spacing-6); color: var(--color-text-muted); font-size: 0.875rem; }
+.form-card p a { font-weight: 500; }
 
-/* Формы */
-.form-group {
-    margin-bottom: var(--spacing-4);
-}
-.form-label {
-    display: block;
-    margin-bottom: var(--spacing-2);
-    font-size: 0.875rem; /* text-sm */
-    font-weight: 500;
-    color: var(--color-text);
-}
-.form-input,
-.form-textarea,
-.form-select {
-    display: block;
-    width: 100%;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    padding: var(--spacing-3) var(--spacing-4); /* 12px 16px */
-    font-size: 1rem;
-    line-height: 1.5;
-    background-color: var(--color-card);
-    color: var(--color-text);
-    transition: var(--transition);
-}
-.form-input::placeholder,
-.form-textarea::placeholder {
-    color: var(--color-text-muted);
-    opacity: 0.7;
-}
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-    outline: none;
-}
-.form-textarea {
-    min-height: 80px;
-    resize: vertical;
-}
+/* --- Стили для Django Form API (в <style> теге в base.html) --- */
+/* Эти классы будут применены Django автоматически */
+.form-group { margin-bottom: var(--spacing-4); }
+.form-label { display: block; margin-bottom: var(--spacing-2); font-size: 0.875rem; font-weight: 500; color: var(--color-text); }
+.form-input { display: block; width: 100%; border-radius: var(--border-radius); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); padding: var(--spacing-3) var(--spacing-4); font-size: 1rem; transition: var(--transition); }
+.form-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); outline: none; }
+.form-errorlist { color: var(--color-error); font-size: 0.875rem; margin-top: var(--spacing-1); list-style-type: none; padding: 0; }
+.form-helptext { display: none; } /* Скрываем подсказки, как ты просил */
 
-/* Стили для {{ form.as_p }} в base.html */
-/* Они применяются автоматически к тегам, генерируемым Django */
+/* --- Секции на Главной --- */
+.section { padding-top: var(--spacing-20); padding-bottom: var(--spacing-20); }
+.section-bg-white { background-color: var(--color-card); }
+.section-bg-gray { background-color: var(--color-background); }
+.section-title { font-size: 2.25rem; font-weight: 700; text-align: center; margin-bottom: var(--spacing-16); }
+.hero-section { text-align: center; }
+.hero-section h1 { margin-bottom: var(--spacing-6); }
+.hero-section p { font-size: 1.25rem; max-width: 48rem; margin-left: auto; margin-right: auto; margin-bottom: var(--spacing-10); }
 
-/* Футер */
-.footer {
-    background-color: var(--gray-900);
-    color: var(--gray-300); /* Светлее текст */
-    padding: var(--spacing-12) 0;
-    margin-top: var(--spacing-16);
-}
-.footer a {
-    color: var(--gray-300);
-}
-.footer a:hover {
-    color: white;
-}
-.footer p {
-    color: var(--gray-400); /* Еще светлее для копирайта */
-    font-size: 0.875rem;
-    margin-top: var(--spacing-8);
-    text-align: center;
-}
+/* --- Сетка "Чему научитесь" --- */
+.features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-8); }
+.feature-card { text-align: center; background-color: var(--color-card); padding: var(--spacing-8); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); transition: var(--transition); }
+.feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); }
+.feature-icon { display: inline-flex; align-items: center; justify-content: center; height: 3.5rem; width: 3.5rem; border-radius: 50%; margin-bottom: var(--spacing-6); background-color: var(--color-primary-light); color: var(--color-primary); }
+.feature-icon svg { height: 1.75rem; width: 1.75rem; }
+.feature-card h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--spacing-3); }
+.feature-card p { font-size: 0.95rem; margin-bottom: 0; }
 
-/* Стили для страницы курса (course.html) */
-.course-layout {
-    display: flex;
-    min-height: 100vh; /* Минимальная высота на весь экран */
-}
-.course-sidebar {
-    width: 320px; /* Шире сайдбар */
-    flex-shrink: 0;
-    background-color: var(--color-card);
-    border-right: 1px solid var(--color-border);
-    height: 100vh;
-    position: sticky; /* Прилипает при прокрутке */
-    top: 0;
-    overflow-y: auto;
-}
-.course-sidebar-header {
-    height: 4.5rem; /* Такая же высота, как у .header */
-    display: flex;
-    align-items: center;
-    padding: 0 var(--spacing-4);
-    border-bottom: 1px solid var(--color-border);
-}
-.course-sidebar nav {
-    padding: var(--spacing-4);
-}
-.module-toggle {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+/* --- Сетка "Преподаватели" --- */
+.teachers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-12); max-width: 56rem; margin: 0 auto; }
+.teacher-card { text-align: center; }
+.teacher-card img { margin: 0 auto var(--spacing-4) auto; height: 8rem; width: 8rem; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-lg); }
+.teacher-card h4 { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--spacing-1); }
+.teacher-card p { font-size: 0.875rem; color: var(--color-primary); font-weight: 500; margin-bottom: 0; }
+
+/* --- Сетка "Программа курса" (на главной) --- */
+.modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-8); }
+.module-card { display: flex; flex-direction: column; background-color: var(--color-card); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); transition: var(--transition); overflow: hidden; }
+.module-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); }
+.module-card-img { height: 12rem; width: 100%; object-fit: cover; background-color: var(--color-border); }
+.module-card-content { padding: var(--spacing-6); flex-grow: 1; display: flex; flex-direction: column; }
+.module-card h4 { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--spacing-4); }
+.module-card ul { list-style: none; padding-left: 0; margin-bottom: 0; flex-grow: 1; }
+.module-card li { position: relative; padding-left: 1.5rem; margin-bottom: var(--spacing-2); font-size: 0.95rem; }
+.module-card li::before { content: '✓'; position: absolute; left: 0; color: var(--color-primary); font-weight: bold; }
+.view-program-link { display: block; margin-top: var(--spacing-16); text-align: center; font-size: 1.125rem; font-weight: 500; }
+
+/* --- Футер --- */
+.footer { background-color: var(--color-footer-bg); color: var(--color-footer-text); padding: var(--spacing-12) 0; margin-top: var(--spacing-24); }
+.footer .container { text-align: center; }
+.footer-nav { display: flex; justify-content: center; gap: var(--spacing-6); margin-bottom: var(--spacing-8); }
+.footer-nav a { color: var(--color-footer-text); }
+.footer-nav a:hover { color: var(--color-footer-link-hover); }
+.footer p { color: var(--color-text-muted); font-size: 0.875rem; margin: 0; }
+
+/* --- Страница Курса (Course Page) --- */
+.course-layout { display: flex; min-height: 100vh; }
+.course-sidebar { width: 320px; flex-shrink: 0; background-color: var(--color-card); border-right: 1px solid var(--color-border); height: 100vh; position: sticky; top: 0; overflow-y: auto; }
+.course-sidebar-header { height: 4.5rem; display: flex; align-items: center; padding: 0 var(--spacing-6); border-bottom: 1px solid var(--color-border); }
+.course-sidebar-nav { padding: var(--spacing-4); }
+.module-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: var(--spacing-3); border-radius: var(--border-radius); font-weight: 600; color: var(--color-text); background: none; border: none; cursor: pointer; text-align: left; transition: var(--transition); }
+.module-toggle:hover { background-color: var(--color-background); }
+.module-toggle svg { width: 1rem; height: 1rem; color: var(--color-text-muted); transition: transform 0.2s ease; }
+.module-toggle[aria-expanded="true"] svg { transform: rotate(90deg); }
+.lesson-list { padding-left: var(--spacing-4); margin-top: var(--spacing-1); overflow: hidden; }
+.lesson-list button { display: block; width: 100%; text-align: left; padding: var(--spacing-2) var(--spacing-3); border-radius: calc(var(--border-radius) / 2); color: var(--color-text-muted); background: none; border: none; cursor: pointer; transition: var(--transition); font-size: 0.95rem; }
+.lesson-list button:hover, .lesson-list button.active { background-color: var(--color-primary-light); color: var(--color-primary-dark); font-weight: 500; }
+.lesson-list .test-link button { font-weight: 600; color: var(--color-primary); }
+.course-content { flex-grow: 1; padding: var(--spacing-8); }
+
+/* --- Контент Урока (Lesson Content) --- */
+.lesson-content-card { background-color: var(--color-card); padding: var(--spacing-8); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); max-width: 56rem; margin: 0 auto; }
+.lesson-video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; margin-bottom: var(--spacing-6); border-radius: var(--border-radius); box-shadow: var(--shadow-md); background: #000; }
+.lesson-video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.lesson-prose { color: var(--color-text); line-height: 1.7; }
+.lesson-prose h2, .lesson-prose h3 { margin-top: var(--spacing-8); margin-bottom: var(--spacing-3); padding-bottom: var(--spacing-2); border-bottom: 1px solid var(--color-border); }
+.lesson-prose p { color: var(--color-text); }
+.lesson-prose ul { list-style: disc; }
+.lesson-prose ol { list-style: decimal; }
+.lesson-prose code { background-color: var(--color-background); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; color: var(--color-primary-dark); }
+.lesson-prose pre { background-color: var(--gray-800); color: var(--gray-100); padding: var(--spacing-4); border-radius: var(--border-radius); overflow-x: auto; margin-bottom: var(--spacing-6); }
+.lesson-prose pre code { background: none; padding: 0; color: inherit; }
+.lesson-assignment, .lesson-resources { margin-top: var(--spacing-8); padding: var(--spacing-6); background-color: var(--color-background); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+.lesson-assignment h3, .lesson-resources h3 { margin-top: 0; margin-bottom: var(--spacing-4); font-size: 1.25rem; }
+.lesson-resources ul { list-style: none; padding-left: 0; }
+.lesson-resources li { margin-bottom: var(--spacing-2); }
+.lesson-resources a::before { content: '🔗 '; margin-right: var(--spacing-1); }
+
+/* --- Профиль --- */
+.profile-nav a, .profile-nav form button {
+    display: block; width: 100%; text-align: left;
     padding: var(--spacing-3);
     border-radius: var(--border-radius);
-    font-weight: 600;
-    color: var(--color-text);
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-align: left;
+    font-weight: 500;
+    color: var(--color-text-muted);
     transition: var(--transition);
+    background: none; border: none; cursor: pointer; font-size: 1rem;
 }
-.module-toggle:hover {
+.profile-nav a:hover, .profile-nav form button:hover {
     background-color: var(--color-background);
+    color: var(--color-text);
+    text-decoration: none;
 }
-.module-toggle svg {
-    width: 1rem;
-    height: 1rem;
-    color: var(--color-text-muted);
-    transition: transform 0.2s ease;
-}
-.module-toggle.open svg { /* Класс 'open' можно добавлять через AlpineJS */
-    transform: rotate(90deg);
-}
-.lesson-list {
-    padding-left: var(--spacing-4);
-    margin-top: var(--spacing-1);
-    /* Анимация появления/скрытия через max-height */
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-}
-.lesson-list.open { /* Класс 'open' можно добавлять через AlpineJS */
-     max-height: 1000px; /* Достаточно большое значение */
-     transition: max-height 0.5s ease-in;
-}
-.lesson-list button {
-    display: block;
-    width: 100%;
-    text-align: left;
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: calc(var(--border-radius) / 2);
-    color: var(--color-text-muted);
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: var(--transition);
-    font-size: 0.95rem;
-}
-.lesson-list button:hover,
-.lesson-list button.active { /* Класс 'active' для выбранного урока */
+.profile-nav a.active {
     background-color: var(--color-primary-light);
     color: var(--color-primary-dark);
-    font-weight: 500;
-}
-.lesson-list .test-link button {
     font-weight: 600;
-    color: var(--color-primary);
 }
+.profile-progress-list li { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-4); border-radius: var(--border-radius); background-color: var(--color-background); }
+.profile-progress-status { font-size: 0.875rem; font-weight: 500; padding: var(--spacing-1) var(--spacing-3); border-radius: 9999px; }
+.status-passed { background-color: var(--color-success-light); color: var(--color-success); }
+.status-pending { background-color: var(--color-border); color: var(--color-text-muted); }
 
-.course-content {
-    flex-grow: 1;
-    padding: var(--spacing-8);
-    overflow-y: auto;
-    /* Если сайдбар sticky, контент тоже должен прокручиваться */
-    /* height: 100vh; */
+/* --- Адаптивность для сеток --- */
+@media (max-width: 1024px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .modules-grid { grid-template-columns: repeat(2, 1fr); }
 }
-
-/* Стили для контента урока (lesson.html) */
-.lesson-content-card {
-    background-color: var(--color-card);
-    padding: var(--spacing-8);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg);
-    max-width: var(--max-w-4xl); /* Ограничиваем ширину */
-    margin: 0 auto; /* Центрируем */
-}
-.lesson-video-wrapper {
-    position: relative;
-    padding-bottom: 56.25%; /* Соотношение сторон 16:9 */
-    height: 0;
-    overflow: hidden;
-    margin-bottom: var(--spacing-6);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
-}
-.lesson-video-wrapper iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-.lesson-content-card h1 {
-    font-size: 2rem; /* text-3xl */
-    margin-bottom: var(--spacing-4);
-}
-.lesson-prose { /* Стилизация текста урока */
-    color: var(--color-text);
-    line-height: 1.7;
-}
-.lesson-prose h2, .lesson-prose h3 {
-    margin-top: var(--spacing-8);
-    margin-bottom: var(--spacing-3);
-    padding-bottom: var(--spacing-2);
-    border-bottom: 1px solid var(--color-border);
-}
-.lesson-prose p {
-    color: var(--color-text); /* Не приглушаем текст урока */
-}
-.lesson-prose code { /* Стили для кода */
-    background-color: var(--color-background);
-    padding: 0.2em 0.4em;
-    border-radius: 4px;
-    font-size: 0.9em;
-    color: var(--color-primary-dark);
-}
-.lesson-prose pre {
-    background-color: var(--gray-800);
-    color: var(--gray-100);
-    padding: var(--spacing-4);
-    border-radius: var(--border-radius);
-    overflow-x: auto;
-    margin-bottom: var(--spacing-6);
-}
-.lesson-prose pre code {
-    background: none;
-    padding: 0;
-    color: inherit;
-}
-.lesson-assignment, .lesson-resources {
-    margin-top: var(--spacing-8);
-    padding: var(--spacing-6);
-    background-color: var(--color-background);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--color-border);
-}
-.lesson-assignment h3, .lesson-resources h3 {
-    margin-top: 0;
-    margin-bottom: var(--spacing-4);
-    font-size: 1.25rem; /* text-xl */
-}
-.lesson-resources ul {
-    list-style: none;
-    padding-left: 0;
-}
-.lesson-resources li {
-    margin-bottom: var(--spacing-2);
-}
-.lesson-resources a::before { /* Добавляем иконку ссылки */
-    content: '🔗 ';
-    margin-right: var(--spacing-1);
+@media (max-width: 768px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .modules-grid { grid-template-columns: 1fr; }
+    .teachers-grid { grid-template-columns: 1fr; }
 }

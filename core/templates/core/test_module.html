@@ -1,45 +1,26 @@
-{% extends 'core/base.html' %}
 {% load static %}
-
-{% block title %}Тестирование модуля - EduPlatform{% endblock %}
-
-{% block content %}
-    <div class="flex min-h-screen">
-        <aside class="w-80 flex-shrink-0 bg-white border-r border-gray-200">
-            <div class="p-4 border-b">
-                <a href="{% url 'core:index' %}" class="flex items-center">
-                    <svg class="h-8 w-8 text-brand-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                    </svg>
-                    <span class="ml-2 text-2xl font-bold text-gray-800">EduPlatform</span>
-                </a>
-            </div>
-            <nav class="p-4">
-                <a href="{% url 'core:course' %}" class="block p-2 text-sm text-gray-600 rounded-md hover:bg-gray-100">Программа курса</a>
-                <a href="{% url 'core:profile' %}" class="block p-2 text-sm text-gray-600 rounded-md hover:bg-gray-100">Мой профиль</a>
-                <form action="{% url 'core:logout' %}" method="post" class="block p-2 text-sm text-gray-600 rounded-md hover:bg-gray-100">
-                    {% csrf_token %}
-                    <button type="submit" class="w-full text-left">Выйти</button>
-                </form>
-            </nav>
-        </aside>
-
-        <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-6">Тестирование модуля: {{ module.title }}</h1>
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4">{{ test.title }}</h2>
-                <p class="text-gray-600 mb-4">{{ test.description }}</p>
-                <form method="post">
-                    {% csrf_token %}
-                    {% for question in test.questions.all %}
-                        <div class="mb-4">
-                            <p class="font-bold">{{ forloop.counter }}. {{ question.text }}</p>
-                            <input type="text" name="answer_{{ question.id }}" class="w-full p-2 border rounded-md" placeholder="Ваш ответ" required>
-                        </div>
-                    {% endfor %}
-                    <button type="submit" class="bg-brand-blue text-white py-2 px-4 rounded-md hover:bg-blue-700">Отправить тест</button>
-                </form>
-            </div>
-        </main>
+<div class="lesson-content-card">
+    <h1>Тестирование модуля: {{ module.title }}</h1>
+    
+    <div class="lesson-assignment"> <h3 style="margin-top:0;">{{ test.title }}</h3>
+        <p style="color: var(--color-text-muted);">{{ test.description|linebreaks }}</p>
     </div>
-{% endblock %}
+
+    <form method="post" 
+          hx-post="{% url 'core:test_module' module.id %}" 
+          hx-target="#lesson-main-content"
+          hx-swap="innerHTML"
+          style="margin-top: var(--spacing-6);">
+        
+        {% csrf_token %}
+        
+        {% for question in test.questions.all %}
+            <div style="margin-bottom: var(--spacing-4);">
+                <label for="answer_{{ question.id }}" style="display: block; margin-bottom: var(--spacing-2); font-weight: 500;">{{ forloop.counter }}. {{ question.text }}</label>
+                <input type="text" name="answer_{{ question.id }}" id="answer_{{ question.id }}" class="form-input" placeholder="Ваш ответ" required>
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn btn-primary" style="margin-top: var(--spacing-4);">Отправить тест</button>
+    </form>
+</div>
