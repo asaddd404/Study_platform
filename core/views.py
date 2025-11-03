@@ -1,8 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, login
-# Удален UserCreationForm, импортирован CustomUserCreationForm
-from .forms import ProfileForm, CustomUserCreationForm
+#
+# ИСПРАВЛЕНИЕ: Убираем UserCreationForm, импортируем нашу CustomUserCreationForm
+#
+# from django.contrib.auth.forms import UserCreationForm # <-- УДАЛИ ЭТУ СТРОКУ
+from .forms import ProfileForm, CustomUserCreationForm # <-- ДОБАВЬ CustomUserCreationForm
+#
 from django.utils import timezone
 from .models import Course, Module, Lesson, Resource, Test, TestSubmission, TestAnswer, Progress, User
 from django.http import JsonResponse
@@ -24,8 +28,16 @@ def about(request):
     return render(request, 'core/about.html')
 
 def register(request):
+    #
+    # ИСПРАВЛЕНИЕ:
+    # Если пользователь уже залогинен, не показываем ему
+    # форму регистрации, а отправляем в профиль.
+    #
+    if request.user.is_authenticated:
+        return redirect('core:profile')
+    
     if request.method == 'POST':
-        # Заменено на CustomUserCreationForm
+        # Используем CustomUserCreationForm
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
@@ -34,7 +46,7 @@ def register(request):
             login(request, user)
             return redirect('core:profile')
     else:
-        # Заменено на CustomUserCreationForm
+        # Используем CustomUserCreationForm
         form = CustomUserCreationForm()
     return render(request, 'core/register.html', {'form': form})
 
@@ -78,25 +90,36 @@ def lesson(request, lesson_id):
         progress.save()
         
     # Важно: lesson.html теперь должен быть фрагментом (без extends base.html)
-    return render(request, 'core/lesson.html', {'lesson': lesson, 'assignment': lesson.assignment})
+    # ИСПРАВЛЕНИЕ ОШИБКИ 500 (AttributeError):
+    # Безопасно передаем 'assignment'
+    return render(request, 'core/lesson.html', {
+        'lesson': lesson, 
+        'assignment': lesson.assignment
+    })
 
 @login_required
 def lesson_description(request, lesson_id):
+    # Этот view больше не нужен, так как lesson.html теперь с вкладками
+    # Но мы оставим его, если вдруг он где-то используется
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    # Этот шаблон также должен быть HTML-фрагментом для HTMX
-    return render(request, 'core/lesson_description.html', {'lesson': lesson})
+    return render(request, 'core/partials/lesson_description.html', {'lesson': lesson})
 
 @login_required
 def lesson_resources(request, lesson_id):
+    # Этот view больше не нужен, так как lesson.html теперь с вкладками
     lesson = get_object_or_404(Lesson, id=lesson_id)
     resources = lesson.resources.all()
-    # Этот шаблон также должен быть HTML-фрагментом для HTMX
-    return render(request, 'core/lesson_resources.html', {'lesson': lesson, 'resources': resources})
+    return render(request, 'core/partials/lesson_resources.html', {'lesson': lesson, 'resources': resources})
 
 @login_required
 def test_module(request, module_id):
     module = get_object_or_404(Module, id=module_id)
-    test = get_object_or_404(Test, module=module)
+    try:
+        test = Test.objects.get(module=module)
+    except Test.DoesNotExist:
+        # Если теста нет, показываем сообщение
+        return render(request, 'core/locked.html', {'lesson': None, 'message': 'Тест для этого модуля еще не создан.'})
+        
     lessons = Lesson.objects.filter(module=module)
     
     # Проверка, пройдены ли все уроки модуля
@@ -111,24 +134,23 @@ def test_module(request, module_id):
             TestAnswer(submission=submission, question=question, answer_text=answer_text).save()
         submission.calculate_score()
         
-        # Разблокировка следующего модуля, если тест пройден
+        # Разблокировка следующего модуля (если он есть)
         if submission.passed:
             next_module = Module.objects.filter(course=module.course, created_at__gt=module.created_at).order_by('created_at').first()
             if next_module:
-                # Эта логика может быть не нужна, если прогресс создается при первом входе
                 pass
         
         # После отправки теста лучше перенаправить на страницу курса
-        return redirect('core:course')
+        # Но так как мы в HTMX, мы можем просто показать результат
+        return render(request, 'core/partials/test_result.html', {'submission': submission, 'test': test})
         
     # Этот шаблон также должен быть HTML-фрагментом для HTMX
     return render(request, 'core/test_module.html', {'test': test, 'module': module})
 
 @login_required
 def profile(request):
-    # Добавлена логика для загрузки прогресса
     progress = None
-    submissions = None # Логика для проверки учителем (пока не реализована)
+    submissions = None
 
     if request.user.role == 'student':
         progress = Progress.objects.filter(student=request.user).select_related('lesson', 'lesson__module').order_by('lesson__created_at')
@@ -147,7 +169,7 @@ def profile(request):
     return render(request, 'core/profile.html', {
         'form': form,
         'progress': progress,       # Передаем прогресс в шаблон
-        'submissions': submissions  # Передаем 'None' или данные
+        'submissions': submissions
     })
 
 def custom_logout(request):

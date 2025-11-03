@@ -1,0 +1,21 @@
+<div class="lesson-content-card">
+    <h1 style="text-align: center;">Результаты теста</h1>
+    <h3 style="text-align: center; color: var(--color-text-muted); margin-bottom: var(--spacing-8);">{{ test.title }}</h3>
+
+    {% if submission.passed %}
+        <div style="background-color: var(--color-success-light); color: var(--color-success); padding: var(--spacing-6); border-radius: var(--border-radius); text-align: center;">
+            <h2 style="color: var(--color-success); margin-bottom: var(--spacing-2);">Тест пройден!</h2>
+            <p style="color: var(--color-success); font-size: 1.25rem; font-weight: 500; margin-bottom: 0;">Ваш балл: {{ submission.score }}</p>
+        </div>
+    {% else %}
+        <div style="background-color: #FFFBEB; color: #D97706; padding: var(--spacing-6); border-radius: var(--border-radius); text-align: center;">
+            <h2 style="color: #D97706; margin-bottom: var(--spacing-2);">Тест не пройден</h2>
+            <p style="color: #D97706; font-size: 1.25rem; font-weight: 500; margin-bottom: 0;">Ваш балл: {{ submission.score }}</p>
+            <p style="color: #B45309; margin-top: var(--spacing-4); margin-bottom: 0;">Попробуйте еще раз.</p>
+        </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: var(--spacing-8);">
+         <a href="{% url 'core:course' %}" class="btn btn-primary">Вернуться к курсу</a>
+    </div>
+</div>
