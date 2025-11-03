@@ -5,16 +5,22 @@ from .models import User
 class CustomUserCreationForm(UserCreationForm):
     """
     Кастомная форма регистрации.
-    Мы не переопределяем поля паролей, чтобы сохранить всю встроенную 
-    валидацию Django, но мы скроем 'help_text' в HTML-шаблоне.
     """
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ("username", "email")
+        #
+        # ИСПРАВЛЕНИЕ:
+        # Мы берем поля из базовой формы (username, password, password2)
+        # и ДОБАВЛЯЕМ к ним 'email'.
+        #
+        fields = UserCreationForm.Meta.fields + ('email',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Применяем CSS-классы из styles.css к полям
+        #
+        # Теперь 'password' и 'password2' 100% существуют в self.fields,
+        # и ошибки KeyError не будет.
+        #
         self.fields['username'].widget.attrs.update({'class': 'form-input'})
         self.fields['email'].widget.attrs.update({'class': 'form-input'})
         self.fields['password'].widget.attrs.update({'class': 'form-input'})
@@ -30,7 +36,6 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomAuthenticationForm(AuthenticationForm):
     """
     Кастомная форма входа (логина).
-    Меняет 'Username' на 'Логин' и добавляет CSS-классы.
     """
     username = forms.CharField(
         label='Логин',
