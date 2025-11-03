@@ -10,7 +10,7 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         #
         # ИСПРАВЛЕНИЕ:
-        # Мы берем поля из базовой формы (username, password, password2)
+        # Мы наследуем поля (username, password, password2) из UserCreationForm.Meta.fields
         # и ДОБАВЛЯЕМ к ним 'email'.
         #
         fields = UserCreationForm.Meta.fields + ('email',)
