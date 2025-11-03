@@ -24,7 +24,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                 </button>
 
-                <ul class="lesson-list" x-bind:class="{ 'open': open }">
+                <ul class="lesson-list" x-show="open" style="display: none;"
                     x-transition:enter="transition ease-out duration-300"
                     x-transition:enter-start="max-height: 0"
                     x-transition:enter-end="max-height: 1000px"

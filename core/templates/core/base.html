@@ -12,44 +12,11 @@
     <script src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
 
     <style>
-        /* === ДОБАВЬ ЭТОТ КОД В КОНЕЦ <style> в base.html === */
-
-/* --- Стили для Табов (Tabs) --- */
-.tab-buttons {
-    display: flex;
-    border-bottom: 2px solid var(--color-border);
-    margin-bottom: var(--spacing-6);
-}
-.tab-button {
-    padding: var(--spacing-3) var(--spacing-4);
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px; /* Наложение на нижнюю границу */
-    transition: var(--transition);
-}
-.tab-button:hover {
-    color: var(--color-text);
-}
-.tab-button.active { /* 'active' класс будет добавлять Alpine.js */
-    color: var(--color-primary);
-    border-bottom-color: var(--color-primary);
-}
         /* 3. СТИЛИ ДЛЯ DJANGO FORMS (form.as_p) */
-        /* Они применяют классы из styles.css к тегам, которые генерирует Django */
-        form p {
-            margin-bottom: var(--spacing-4);
-        }
+        form p { margin-bottom: var(--spacing-4); }
         form p label {
-            display: block;
-            margin-bottom: var(--spacing-2);
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--color-text);
+            display: block; margin-bottom: var(--spacing-2);
+            font-size: 0.875rem; font-weight: 500; color: var(--color-text);
         }
         form p input[type='text'],
         form p input[type='password'],
@@ -59,17 +26,11 @@
         form p input[type='file'],
         form p textarea,
         form p select {
-            display: block;
-            width: 100%;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--color-border);
-            box-shadow: var(--shadow-sm);
-            padding: var(--spacing-3) var(--spacing-4);
-            font-size: 1rem;
-            line-height: 1.5;
-            background-color: var(--color-card);
-            color: var(--color-text);
-            transition: var(--transition);
+            display: block; width: 100%;
+            border-radius: var(--border-radius); border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm); padding: var(--spacing-3) var(--spacing-4);
+            font-size: 1rem; line-height: 1.5; background-color: var(--color-card);
+            color: var(--color-text); transition: var(--transition);
         }
         form p input:focus,
         form p textarea:focus,
@@ -78,18 +39,34 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
             outline: none;
         }
-        .helptext {
-            /* Скрываем подсказки Django, как ты и просил */
-            display: none;
-        }
+        .helptext { display: none; } /* Скрываем подсказки Django */
         .errorlist {
-            color: var(--color-error);
-            font-size: 0.875rem;
-            margin-top: var(--spacing-1);
-            list-style-type: none;
-            padding-left: 0;
-            margin-bottom: var(--spacing-2);
+            color: var(--color-error); font-size: 0.875rem;
+            margin-top: var(--spacing-1); list-style-type: none;
+            padding-left: 0; margin-bottom: var(--spacing-2);
         }
+
+        /* 4. НОВЫЕ СТИЛИ: Для вкладок (tabs) на странице урока
+        */
+        .tab-buttons {
+            display: flex;
+            border-bottom: 2px solid var(--color-border);
+            margin-bottom: var(--spacing-6);
+        }
+        .tab-button {
+            padding: var(--spacing-3) var(--spacing-4);
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px; /* Наложение на нижнюю границу */
+            transition: var(--transition);
+        }
+        .tab-button:hover { color: var(--color-text); }
+        .tab-button.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
     </style>
 </head>
 <body>
