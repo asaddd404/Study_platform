@@ -12,14 +12,19 @@ class CustomUserCreationForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({'class': 'form-input'})
         self.fields['email'].widget.attrs.update({'class': 'form-input'})
-        self.fields['password'].widget.attrs.update({'class': 'form-input'})
+        
+        # --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
+        # Было 'password', должно быть 'password1'
+        self.fields['password1'].widget.attrs.update({'class': 'form-input'})
         self.fields['password2'].widget.attrs.update({'class': 'form-input'})
+        
         self.fields['username'].label = "Логин (Имя пользователя)"
         self.fields['email'].label = "Email"
-        self.fields['password'].label = "Пароль"
+        
+        # --- И ИСПРАВЛЕНИЕ ЗДЕСЬ ---
+        # Было 'password', должно быть 'password1'
+        self.fields['password1'].label = "Пароль"
         self.fields['password2'].label = "Подтверждение пароля"
-
-
 class CustomAuthenticationForm(AuthenticationForm):
     username = forms.CharField(
         label='Логин',

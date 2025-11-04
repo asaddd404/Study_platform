@@ -10,19 +10,19 @@
 
     <h4 class="mt-4" style="margin-top: 20px;">Прогресс по урокам:</h4>
     {% if progress %}
-        <ul class="list-group">
+        <ul class="list-group" style="list-style: none; padding: 0;">
             {% for p in progress %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ p.lesson.title }}</strong>
-                    <br>
-                    <small class="text-muted">Курс: {{ p.lesson.module.course.title }} / Модуль: {{ p.lesson.module.title }}</small>
-                </div>
+            <li class="list-group-item" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; border-radius: 4px;">
+                <strong>{{ p.lesson.title }}</strong>
+                <span style="float: right;">
                 {% if p.passed %}
-                    <span class="badge bg-success rounded-pill">Завершено</span>
+                    <span style="color: green;">Завершено</span>
                 {% else %}
-                    <span class="badge bg-warning rounded-pill">В процессе</span>
+                    <span style="color: orange;">В процессе</span>
                 {% endif %}
+                </span>
+                <br>
+                <small style="color: #777;">Курс: {{ p.lesson.module.course.title }} / Модуль: {{ p.lesson.module.title }}</small>
             </li>
             {% endfor %}
         </ul>
@@ -32,17 +32,17 @@
 
     <h4 class="mt-4" style="margin-top: 20px;">Результаты тестов:</h4>
     {% if submissions %}
-        <ul class="list-group">
+        <ul class="list-group" style="list-style: none; padding: 0;">
             {% for sub in submissions %}
-            <li class="list-group-item">
+            <li class="list-group-item" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; border-radius: 4px;">
                 <strong>{{ sub.test.title }}</strong> (Модуль: {{ sub.test.module.title }})
                 <br>
                 Результат: <strong>{{ sub.score }}%</strong>
-                <span class="badge {% if sub.passed %}bg-success{% else %}bg-danger{% endif %}">
+                <span style="float: right; {% if sub.passed %}color: green;{% else %}color: red;{% endif %}">
                     {% if sub.passed %}Сдано{% else %}Не сдано{% endif %}
                 </span>
                 <br>
-                <small class="text-muted">Дата: {{ sub.submitted_at }}</small>
+                <small style="color: #777;">Дата: {{ sub.submitted_at }}</small>
             </li>
             {% endfor %}
         </ul>

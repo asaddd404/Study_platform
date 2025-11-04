@@ -1,13 +1,16 @@
-import os
+import os  # <-- 1. ДОБАВЬТЕ ЭТУ СТРОКУ В САМЫЙ ВЕРХ
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'your-secret-key-here'
+# ... (ваш SECRET_KEY) ...
+SECRET_KEY = 'django-insecure-m+j)920&u(m=48!_6*y@4#7(1j(a=s(o^9e5a(b6@k3*z75q(x'
 
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+# ... (INSTALLED_APPS, MIDDLEWARE, TEMPLATES, DATABASES, AUTH_PASSWORD_VALIDATORS - без изменений) ...
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -71,6 +74,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 LANGUAGE_CODE = 'ru-ru'
 TIME_ZONE = 'UTC'
 USE_I18N = True
@@ -78,6 +82,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+#
+# <-- 2. ДОБАВЬТЕ ЭТОТ БЛОК -->
+#
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'core/static'),
+]
+#
+#
+#
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -86,5 +101,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.User'
 
 LOGIN_REDIRECT_URL = 'core:profile'
-
 LOGOUT_REDIRECT_URL = 'core:index'
