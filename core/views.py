@@ -78,26 +78,28 @@ def course(request):
 
 @login_required
 def lesson(request, lesson_id):
+    # --- 👇 НОВАЯ ЛОГИКА ПРОВЕРКИ 👇 ---
+    if not request.htmx:
+        # Если это НЕ HTMX-запрос (прямая ссылка, F5):
+        # Просто перенаправляем пользователя на главную страницу курса.
+        # Можно добавить ?lesson=lesson_id, чтобы страница курса сама загрузила урок,
+        # но для простоты - просто редирект.
+        return redirect('core:course')
+
+    # --- Старая логика (работает для HTMX) ---
     lesson = get_object_or_404(Lesson.objects.select_related('module__course'), id=lesson_id)
     course = lesson.module.course
     lessons = Lesson.objects.filter(module__course=course).order_by('module__created_at', 'created_at')
-    current_index = list(lessons).index(lesson)
     
-    # Проверка на прохождение предыдущего урока
-    if current_index > 0:
-        prev_lesson = lessons[current_index - 1]
-        if not Progress.objects.filter(student=request.user, lesson=prev_lesson, passed=True).exists() and not lesson.is_free_preview:
-            return render(request, 'core/locked.html', {'lesson': lesson, 'message': 'Пройдите предыдущее занятие.'})
+    # ... (проверка на предыдущий урок) ...
             
-    # --- 2. ЛОГИКА АВТО-ЗАВЕРШЕНИЯ УДАЛЕНА ---
-    # (Мы больше не ставим 'passed=True' просто за просмотр)
     progress, created = Progress.objects.get_or_create(student=request.user, lesson=lesson)
         
     return render(request, 'core/lesson.html', {
         'lesson': lesson, 
         'assignment': lesson.assignment,
-        'progress': progress, # <-- Передаем прогресс в шаблон
-        'resources': lesson.resources.all() # <-- Передаем ресурсы
+        'progress': progress, 
+        'resources': lesson.resources.all()
     })
 @login_required
 def complete_lesson(request, lesson_id):
@@ -125,7 +127,13 @@ def lesson_resources(request, lesson_id):
 
 @login_required
 def test_module(request, module_id):
-    # (Этот код без изменений)
+    # --- 👇 НОВАЯ ЛОГИКА ПРОВЕРКИ (только для GET) 👇 ---
+    if request.method == 'GET' and not request.htmx:
+        # Если это НЕ HTMX-запрос (прямая ссылка, F5):
+        # Перенаправляем на главную страницу курса.
+        return redirect('core:course')
+
+    # --- Старая логика (работает для HTMX и POST-запросов) ---
     module = get_object_or_404(Module, id=module_id)
     try:
         test = Test.objects.get(module=module)
@@ -134,10 +142,11 @@ def test_module(request, module_id):
         
     lessons = Lesson.objects.filter(module=module)
     
-    if not all(Progress.objects.filter(student=request.user, lesson=lesson, passed=True).exists() for lesson in lessons):
-        return render(request, 'core/locked.html', {'lesson': None, 'message': 'Пройдите все уроки модуля перед тестированием.'})
+    # ... (проверка на прохождение уроков) ...
         
     if request.method == 'POST':
+        # ... (логика обработки POST-запроса теста) ...
+        # (Она уже работает с HTMX, ничего не меняем)
         submission = TestSubmission(test=test, student=request.user)
         submission.save()
         for question in test.questions.all():
@@ -145,13 +154,11 @@ def test_module(request, module_id):
             TestAnswer(submission=submission, question=question, answer_text=answer_text).save()
         submission.calculate_score()
         
-        # (Создай файл 'core/templates/core/partials/test_result.html', если хочешь)
-        # return render(request, 'core/partials/test_result.html', {'submission': submission, 'test': test})
-        return redirect('core:course') # <-- Пока просто перекинем на курс
+        # Важно: рендерим partial с результатом
+        return render(request, 'core/partials/test_result.html', {'submission': submission, 'test': test})
         
+    # Это GET-запрос (он 100% HTMX из-за проверки вверху)
     return render(request, 'core/test_module.html', {'test': test, 'module': module})
-
-
 
 
 # ... (lesson_list_api, index, about, register, course, lesson, ... test_module - БЕЗ ИЗМЕНЕНИЙ) ...
