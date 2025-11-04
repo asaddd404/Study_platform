@@ -5,7 +5,7 @@ from .models import (
     Test, TestQuestion, TestSubmission, TestAnswer, Progress
 )
 
-# Переопределяем админку Пользователя
+# Переопределяем админку Пользователя, чтобы было видно роль
 class CustomUserAdmin(UserAdmin):
     model = User
     # Добавляем 'role' в список полей
@@ -18,14 +18,18 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(User, CustomUserAdmin)
 
 
-# --- НОВЫЙ БЛОК ДЛЯ УПРАВЛЕНИЯ КУРСАМИ ---
+# --- Настройка управления Курсами, Модулями и Уроками ---
 
-# Позволяет добавлять Уроки прямо на странице Модуля
+# Позволяет добавлять Уроки прямо на странице Модуля (опционально, но удобно)
 class LessonInline(admin.TabularInline):
     model = Lesson
     extra = 1 # Показать 1 пустой слот для нового урока
     fields = ('title', 'author', 'created_at')
-    readonly_fields = ('author', 'created_at') # Автор будет ставиться автоматически
+    readonly_fields = ('created_at',)
+    # Мы не можем автоматически задать 'author' здесь, 
+    # так как у inline нет доступа к 'request'.
+    # Автор будет назначаться, если урок создан из профиля учителя.
+    # Уроки, созданные в админке, нужно будет назначить вручную.
 
 # Админка для Модулей
 class ModuleAdmin(admin.ModelAdmin):
@@ -39,6 +43,7 @@ class ModuleAdmin(admin.ModelAdmin):
     
     inlines = [LessonInline] # Показываем уроки внутри
 
+# Регистрируем Модуль с новыми настройками
 admin.site.register(Module, ModuleAdmin)
 
 
@@ -47,8 +52,8 @@ class LessonAdmin(admin.ModelAdmin):
     list_display = ('title', 'module', 'author', 'created_at')
     list_filter = ('module__course', 'module', 'author')
     search_fields = ('title', 'content')
-    # Делаем автора "только для чтения", т.к. он назначается при создании
-    readonly_fields = ('author',) 
+    # Позволяем менять автора в админке
+    autocomplete_fields = ('author', 'module') # Удобный поиск
 
 admin.site.register(Lesson, LessonAdmin)
 
@@ -58,13 +63,21 @@ class CourseAdmin(admin.ModelAdmin):
     list_display = ('title', 'published', 'created_at')
     list_filter = ('published',)
     search_fields = ('title', 'description')
-    # Тоже добавляем удобный выбор
+    # Тоже добавляем удобный выбор учителей на уровне курса
     filter_horizontal = ('teachers',)
+    
+    # Показываем модули внутри курса
+    class ModuleInline(admin.TabularInline):
+        model = Module
+        extra = 0
+        fields = ('title',)
+        
+    inlines = [ModuleInline]
 
 admin.site.register(Course, CourseAdmin)
 
 
-# ... (Регистрация остальных моделей, если нужно) ...
+# ... Регистрация остальных моделей ...
 admin.site.register(Resource)
 admin.site.register(Test)
 admin.site.register(TestQuestion)

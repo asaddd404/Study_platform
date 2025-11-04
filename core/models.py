@@ -88,20 +88,37 @@ class Module(models.Model):
         return f"{self.course.title} - {self.title}"
 
 
+pass
+
 class Lesson(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons", verbose_name=_("Модуль"))
     title = models.CharField(max_length=200, verbose_name=_("Название занятия"))
     content = models.TextField(blank=True, verbose_name=_("Содержание"))
-    video_url = models.URLField(blank=True, null=True, verbose_name=_("URL видео"))
+    
+    # --- 1. ИЗМЕНЕНИЯ ЗДЕСЬ ---
+    video_url = models.URLField(blank=True, null=True, verbose_name=_("URL видео (Youtube/Vimeo)"))
+    
+    video_file = models.FileField(
+        upload_to='lesson_videos/', blank=True, null=True, 
+        verbose_name=_("Видео-файл (MP4, AVI)")
+    )
+    image_file = models.ImageField(
+        upload_to='lesson_images/', blank=True, null=True, 
+        verbose_name=_("Изображение (JPG, PNG)")
+    )
+    pdf_file = models.FileField(
+        upload_to='lesson_pdfs/', blank=True, null=True, 
+        verbose_name=_("PDF-файл")
+    )
+    # --- (Конец изменений) ---
+    
     is_free_preview = models.BooleanField(default=False, verbose_name=_("Бесплатный предпросмотр"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата создания"))
     assignment = models.TextField(blank=True, verbose_name=_("Задание"))
-
-    # <-- 2. НОВОЕ ПОЛЕ: АВТОР УРОКА -->
     author = models.ForeignKey(
         User,
-        on_delete=models.SET_NULL, # Не удалять урок, если учитель удален
+        on_delete=models.SET_NULL, 
         null=True,
         blank=True,
         related_name="authored_lessons",
@@ -116,8 +133,6 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.module.title} - {self.title}"
-
-# ... (остальные модели Resource, Test, TestQuestion, TestSubmission, TestAnswer, Progress без изменений) ...
 
 class Resource(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

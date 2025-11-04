@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User, Lesson, Module # <-- 1. ИМПОРТИРУЕМ Lesson и Module
+from .models import User, Lesson, Module,Test, TestQuestion # # <-- 1. ИМПОРТИРУЕМ Lesson и Module
 #
 # ИСПРАВЛЕНИЕ:
 # Класс RegisterForm был полностью удален,
@@ -73,45 +73,82 @@ class ProfileForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-input'}),
         }
-
 class LessonForm(forms.ModelForm):
     """
     Форма для создания и редактирования уроков учителем.
     """
     class Meta:
         model = Lesson
-        # Убираем 'author' из полей, он будет назначаться автоматически
-        fields = ['module', 'title', 'content', 'video_url', 'assignment', 'is_free_preview']
+        # --- 2. ОБНОВЛЕННЫЙ СПИСОК ПОЛЕЙ ---
+        fields = [
+            'module', 'title', 'content', 
+            'video_url', 'video_file', 'image_file', 'pdf_file', 
+            'assignment', 'is_free_preview'
+        ]
         widgets = {
             'module': forms.Select(attrs={'class': 'form-input'}),
             'title': forms.TextInput(attrs={'class': 'form-input'}),
             'content': forms.Textarea(attrs={'class': 'form-input', 'rows': 10}),
             'video_url': forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}),
+            'video_file': forms.FileInput(attrs={'class': 'form-input'}), # <-- Новое
+            'image_file': forms.FileInput(attrs={'class': 'form-input'}), # <-- Новое
+            'pdf_file': forms.FileInput(attrs={'class': 'form-input'}),   # <-- Новое
             'assignment': forms.Textarea(attrs={'class': 'form-input', 'rows': 5}),
             'is_free_preview': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
         labels = {
-            'module': 'Модуль',
-            'title': 'Название занятия',
-            'content': 'Содержание (текст урока)',
-            'video_url': 'Ссылка на видео (необязательно)',
-            'assignment': 'Задание к уроку (необязательно)',
-            'is_free_preview': 'Бесплатный предпросмотр (доступен без прохождения предыдущих)',
+            # ... (старые лейблы) ...
+            'video_url': 'Ссылка на видео (Youtube/Vimeo)',
+            'video_file': 'Или загрузите видео-файл',         # <-- Новое
+            'image_file': 'Или загрузите изображение',     # <-- Новое
+            'pdf_file': 'Или загрузите PDF-документ',         # <-- Новое
         }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None) 
         super().__init__(*args, **kwargs)
         
+        # Убираем 'required' у URL, так как можно загрузить файл
+        self.fields['video_url'].required = False 
+        
         if user and user.role == 'teacher':
-            #
-            # <-- ИЗМЕНЕННАЯ ЛОГИКА -->
-            #
-            # Показываем только те модули, 
-            # в которых этот учитель числится в 'teachers'
             self.fields['module'].queryset = Module.objects.filter(
-                teachers=user # <-- ВОТ ИЗМЕНЕНИЕ
+                teachers=user 
             ).select_related('course')
-            
-            # (Опционально) Делаем название модуля понятнее
             self.fields['module'].label_from_instance = lambda obj: f"{obj.course.title} / {obj.title}"
+
+# --- 3. НОВЫЕ ФОРМЫ ДЛЯ ТЕСТОВ ---
+
+class TestForm(forms.ModelForm):
+    """
+    Форма для создания/редактирования Теста
+    """
+    class Meta:
+        model = Test
+        fields = ['title', 'description']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-input'}),
+            'description': forms.Textarea(attrs={'class': 'form-input', 'rows': 4}),
+        }
+        labels = {
+            'title': 'Название теста',
+            'description': 'Описание (инструкция)',
+        }
+
+class QuestionForm(forms.ModelForm):
+    """
+    Форма для создания/редактирования Вопроса к тесту
+    """
+    class Meta:
+        model = TestQuestion
+        fields = ['text', 'correct_answer', 'max_score']
+        widgets = {
+            'text': forms.Textarea(attrs={'class': 'form-input', 'rows': 3, 'placeholder': 'Текст вопроса...'}),
+            'correct_answer': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Правильный ответ...'}),
+            'max_score': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': '10'}),
+        }
+        labels = {
+            'text': 'Текст вопроса',
+            'correct_answer': 'Правильный ответ (ученик должен ввести точь-в-точь)',
+            'max_score': 'Балл за вопрос',
+        }

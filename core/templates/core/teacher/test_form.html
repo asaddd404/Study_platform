@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+<div class="course-layout">
+    <aside class="course-sidebar">...</aside>
+    <main class="course-content">
+        <h1>{{ form_title }}</h1>
+        <div class="card">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div style="display: flex; justify-content: space-between; margin-top: var(--spacing-6);">
+                    <a href="{% url 'core:profile' %}#my-lessons" class="btn btn-secondary">Отмена</a>
+                    <button type="submit" class="btn btn-primary">Создать и добавить вопросы</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

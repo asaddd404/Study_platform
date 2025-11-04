@@ -33,6 +33,45 @@
             .tab-link.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 500; }
             .tab-content { display: none; }
             .tab-content.active { display: block; }
+            
+            /* Стили для списка уроков/тестов в профиле */
+            .module-block {
+                border: 1px solid var(--color-border);
+                border-radius: var(--border-radius-lg);
+                margin-bottom: var(--spacing-8);
+                background: #fff;
+                box-shadow: var(--shadow-sm);
+            }
+            .module-block-header {
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                margin-bottom: var(--spacing-4); 
+                border-bottom: 1px solid var(--color-border); 
+                padding: var(--spacing-5);
+                background: var(--color-bg-muted);
+                border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+            }
+            .module-block-header h2 {
+                margin-bottom: 0;
+                font-size: 1.25rem;
+            }
+            .module-block-content {
+                padding: 0 var(--spacing-5) var(--spacing-5) var(--spacing-5);
+            }
+            .module-block-content h3 {
+                font-size: 1.125rem; 
+                margin-bottom: var(--spacing-4);
+                margin-top: var(--spacing-6);
+                padding-bottom: var(--spacing-2);
+                border-bottom: 1px solid var(--color-border-light);
+            }
+            .module-block-content h3:first-child {
+                margin-top: 0;
+            }
+            .module-block-content .profile-progress-list {
+                margin-bottom: var(--spacing-6);
+            }
         </style>
         
         <div class="tabs">
@@ -43,7 +82,7 @@
             {% endif %}
 
             {% if user.role == 'teacher' %}
-                <button class="tab-link" onclick="openTab(event, 'my-lessons')">Мои уроки</button>
+                <button class="tab-link" onclick="openTab(event, 'my-lessons')">Уроки и Тесты</button>
                 <button class="tab-link" onclick="openTab(event, 'my-students')">Мои ученики</button>
             {% endif %}
         </div>
@@ -85,8 +124,68 @@
         {% endif %}
 
         {% if user.role == 'teacher' %}
+            
             <div id="my-lessons" class="tab-content">
-                {% include 'core/teacher/manage_lessons.html' %}
+                
+                {% for module in teacher_modules %}
+                <div class="module-block">
+                    
+                    <div class="module-block-header">
+                        <h2>{{ module.title }}</h2>
+                        <a href="{% url 'core:teacher_lesson_create' %}?module_id={{ module.id }}" class="btn btn-primary btn-sm">
+                            + Добавить урок
+                        </a>
+                    </div>
+                    
+                    <div class="module-block-content">
+                        <h3>Уроки</h3>
+                        {% if module.lessons.all %}
+                            <ul class="profile-progress-list">
+                                {% for lesson in module.lessons.all %}
+                                <li style="display: grid; grid-template-columns: 1fr auto; gap: var(--spacing-4);">
+                                    <div>
+                                        <span style="font-weight: 500;">{{ lesson.title }}</span>
+                                        {% if lesson.author != user %}<span style="color: var(--color-danger); font-size: 0.8rem;"> (Автор: {{ lesson.author.username|default:"N/A" }})</span>{% endif %}
+                                    </div>
+                                    <div style="display: flex; gap: var(--spacing-3);">
+                                        <a href="{% url 'core:lesson' lesson.id %}" class="btn btn-secondary btn-sm" target="_blank">Просмотр</a>
+                                        <a href="{% url 'core:teacher_lesson_update' lesson.id %}" class="btn btn-secondary btn-sm">Изменить</a>
+                                        <a href="{% url 'core:teacher_lesson_delete' lesson.id %}" class="btn btn-danger-outline btn-sm">Удалить</a>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p style="margin-bottom: var(--spacing-6); color: var(--color-text-muted);">В этом модуле пока нет уроков.</p>
+                        {% endif %}
+
+                        <h3>Тесты</h3>
+                        {% if module.tests.all %}
+                             <ul class="profile-progress-list">
+                                {% for test in module.tests.all %}
+                                 <li style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div><span style="font-weight: 500;">{{ test.title }}</span></div>
+                                    <div style="display: flex; gap: var(--spacing-3);">
+                                        <a href="{% url 'core:test_module' module.id %}" class="btn btn-secondary btn-sm" target="_blank">Просмотр</a>
+                                        <a href="{% url 'core:teacher_test_update' test.id %}" class="btn btn-secondary btn-sm">Вопросы/Редакт.</a>
+                                        <a href="{% url 'core:teacher_test_delete' test.id %}" class="btn btn-danger-outline btn-sm">Удалить</a>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p style="margin-bottom: 0;">
+                                <a href="{% url 'core:teacher_test_create' module.id %}" class="btn btn-secondary btn-sm">+ Создать тест</a>
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                </div>
+                {% empty %}
+                <div class="card">
+                    <p style="margin-bottom: 0;">Администратор еще не назначил вас преподавателем ни на один модуль.</p>
+                </div>
+                {% endfor %}
             </div>
         
             <div id="my-students" class="tab-content">

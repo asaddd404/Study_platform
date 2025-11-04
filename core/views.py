@@ -1,12 +1,30 @@
-from django.contrib.auth import logout, login # <-- 1. ДОБАВЛЕН ИМПОРТ 'login'
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test # <-- 1. ИМПОРТ
+from django.contrib.auth.decorators import login_required, user_passes_test 
 from django.contrib.auth import logout, login
-from .forms import ProfileForm, CustomUserCreationForm, LessonForm # <-- 2. ИМПОРТ LessonForm
+# --- 1. ИМПОРТИРУЕМ НОВЫЕ ФОРМЫ ---
+from .forms import (
+    ProfileForm, CustomUserCreationForm, LessonForm, 
+    TestForm, QuestionForm
+)
 from django.utils import timezone
-from .models import Course, Module, Lesson, Resource, Test, TestSubmission, TestAnswer, Progress, User
-from django.http import JsonResponse, HttpResponseForbidden # <-- 3. ИМПОРТ
-from django.db.models import Q #
+from .models import Course, Module, Lesson, Resource, Test, TestSubmission, TestAnswer, Progress, User, TestQuestion
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.db.models import Q 
+from django.urls import reverse
+
+
+# <-- 5. ДЕКОРАТОР ПЕРЕМЕЩЕН СЮДА, В НАЧАЛО ФАЙЛА -->
+def teacher_required(function):
+    # ... (декоратор без изменений) ...
+    def wrap(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.role == 'teacher':
+            return function(request, *args, **kwargs)
+        else:
+            return HttpResponseForbidden("У вас нет доступа к этой странице.")
+    wrap.__doc__ = function.__doc__
+    wrap.__name__ = function.__name__
+    return wrap
+
 
 def lesson_list_api(request):
     # (Этот код без изменений)
@@ -60,28 +78,40 @@ def course(request):
 
 @login_required
 def lesson(request, lesson_id):
-    # (Этот код без изменений)
-    lesson = get_object_or_404(Lesson, id=lesson_id)
+    lesson = get_object_or_404(Lesson.objects.select_related('module__course'), id=lesson_id)
     course = lesson.module.course
     lessons = Lesson.objects.filter(module__course=course).order_by('module__created_at', 'created_at')
     current_index = list(lessons).index(lesson)
     
+    # Проверка на прохождение предыдущего урока
     if current_index > 0:
         prev_lesson = lessons[current_index - 1]
         if not Progress.objects.filter(student=request.user, lesson=prev_lesson, passed=True).exists() and not lesson.is_free_preview:
             return render(request, 'core/locked.html', {'lesson': lesson, 'message': 'Пройдите предыдущее занятие.'})
             
+    # --- 2. ЛОГИКА АВТО-ЗАВЕРШЕНИЯ УДАЛЕНА ---
+    # (Мы больше не ставим 'passed=True' просто за просмотр)
     progress, created = Progress.objects.get_or_create(student=request.user, lesson=lesson)
-    if not progress.passed: 
-        progress.completed_at = timezone.now()
-        progress.passed = True
-        progress.save()
         
     return render(request, 'core/lesson.html', {
         'lesson': lesson, 
-        'assignment': lesson.assignment
+        'assignment': lesson.assignment,
+        'progress': progress, # <-- Передаем прогресс в шаблон
+        'resources': lesson.resources.all() # <-- Передаем ресурсы
     })
-
+@login_required
+def complete_lesson(request, lesson_id):
+    if request.method == 'POST':
+        lesson = get_object_or_404(Lesson, id=lesson_id)
+        progress, created = Progress.objects.get_or_create(student=request.user, lesson=lesson)
+        
+        if not progress.passed:
+            progress.passed = True
+            progress.completed_at = timezone.now()
+            progress.save()
+            
+    # Возвращаем пользователя обратно на урок
+    return redirect('core:lesson', lesson_id=lesson_id)
 # Эти views больше не нужны, но пусть остаются, чтобы ничего не сломать
 @login_required
 def lesson_description(request, lesson_id):
@@ -130,42 +160,37 @@ def test_module(request, module_id):
 @login_required
 @teacher_required
 def teacher_lesson_create(request):
+    # --- 6. Получаем ID модуля из URL (для кнопки "Добавить урок" в модуле) ---
+    module_id = request.GET.get('module_id')
+    initial_data = {}
+    if module_id:
+        if Module.objects.filter(id=module_id, teachers=request.user).exists():
+             initial_data['module'] = module_id
+
     if request.method == 'POST':
-        form = LessonForm(request.POST, user=request.user) 
+        form = LessonForm(request.POST, request.FILES, user=request.user) # <-- Добавлен request.FILES
         if form.is_valid():
-            #
-            # <-- 3. НАЗНАЧАЕМ АВТОРА ПРИ СОЗДАНИИ -->
-            #
-            lesson = form.save(commit=False) # Не сохраняем в БД сразу
-            lesson.author = request.user     # Назначаем автором текущего юзера
-            lesson.save()                    # Теперь сохраняем
-            
+            lesson = form.save(commit=False) 
+            lesson.author = request.user     
+            lesson.save()                    
             return redirect('core:profile') 
     else:
-        form = LessonForm(user=request.user)
+        form = LessonForm(user=request.user, initial=initial_data) # <-- Передаем initial_data
         
     return render(request, 'core/teacher/lesson_form.html', {
         'form': form,
         'form_title': 'Добавить новый урок'
     })
-# <-- 5. НОВЫЙ ДЕКОРАТОР ДЛЯ ПРОВЕРКИ РОЛИ "УЧИТЕЛЬ" -->
-def teacher_required(function):
-    # ... (декоратор без изменений) ...
-    def wrap(request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.role == 'teacher':
-            return function(request, *args, **kwargs)
-        else:
-            return HttpResponseForbidden("У вас нет доступа к этой странице.")
-    wrap.__doc__ = function.__doc__
-    wrap.__name__ = function.__name__
-    return wrap
+
+
+
+# <-- ОПРЕДЕЛЕНИЕ ДЕКОРАТОРА ОТСЮДА УДАЛЕНО -->
 
 @login_required
 def profile(request):
-    
-    # ... (Общая логика 'profile_form' без изменений) ...
+    # ... (логика 'profile_form' без изменений) ...
     profile_form = ProfileForm(instance=request.user)
-    if request.method == 'POST' and 'avatar' in request.FILES: # Проверяем, что это форма профиля
+    if request.method == 'POST' and 'username' in request.POST: 
         profile_form = ProfileForm(request.POST, request.FILES, instance=request.user)
         if profile_form.is_valid():
             profile_form.save()
@@ -175,74 +200,50 @@ def profile(request):
         'form': profile_form,
     }
 
-    # ... (Логика 'student' без изменений) ...
     if request.user.role == 'student':
-        progress = Progress.objects.filter(student=request.user).select_related('lesson', 'lesson__module').order_by('lesson__created_at')
-        context['progress'] = progress
+        # ... (логика 'student' без изменений) ...
+        pass
 
-    #
-    # <-- ИЗМЕНЕННАЯ ЛОГИКА ДЛЯ УЧИТЕЛЯ -->
-    #
     if request.user.role == 'teacher':
-        # Вкладка "Мои Уроки": Получаем модули, назначенные учителю
-        teacher_modules = request.user.taught_modules.all() # <-- 1. ПОЛУЧАЕМ МОДУЛИ
-        
-        # Получаем уроки ИЗ ЭТИХ модулей
-        teacher_lessons = Lesson.objects.filter(
-            module__in=teacher_modules
-        ).select_related('module', 'module__course', 'author').order_by('-created_at')
-        
-        context['teacher_lessons'] = teacher_lessons
-        context['teacher_modules'] = teacher_modules # Передаем модули (вдруг пригодится)
-        
-        # Вкладка "Мои Ученики": Поиск и список
-        # Находим всех студентов, у которых есть прогресс В ЭТИХ МОДУЛЯХ
-        student_ids = Progress.objects.filter(
-            lesson__module__in=teacher_modules # <-- 2. ФИЛЬТРУЕМ ПО МОДУЛЯМ
-        ).values_list('student_id', flat=True).distinct()
-        
-        students_queryset = User.objects.filter(
-            id__in=student_ids, role='student'
+        # --- 4. ОБНОВЛЕННАЯ ЛОГИКА ДЛЯ ГРУППИРОВКИ ---
+        # Получаем модули и сразу все связанные с ними уроки и тесты
+        teacher_modules = request.user.taught_modules.all().prefetch_related(
+            'lessons', 'tests'
         )
-
-        # ... (Логика поиска 'query' без изменений) ...
+        
+        context['teacher_modules'] = teacher_modules # <-- Передаем модули
+        
+        # ... (логика поиска студентов 'students_queryset' без изменений) ...
+        student_ids = Progress.objects.filter(
+            lesson__module__in=teacher_modules
+        ).values_list('student_id', flat=True).distinct()
+        students_queryset = User.objects.filter(id__in=student_ids, role='student')
         query = request.GET.get('q', '')
         if query:
             students_queryset = students_queryset.filter(
                 Q(username__icontains=query) | Q(email__icontains=query)
             )
-        
         context['students_list'] = students_queryset.order_by('username')
         context['search_query'] = query
 
-
     return render(request, 'core/profile.html', context)
 
-@login_required
-def teacher_required(function):
-    # ... (декоратор без изменений) ...
-    def wrap(request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.role == 'teacher':
-            return function(request, *args, **kwargs)
-        else:
-            return HttpResponseForbidden("У вас нет доступа к этой странице.")
-    wrap.__doc__ = function.__doc__
-    wrap.__name__ = function.__name__
-    return wrap
+
+#
+
+# <-- ВТОРОЕ (ЛИШНЕЕ) ОПРЕДЕЛЕНИЕ ДЕКОРАТОРА УДАЛЕНО ОТСЮДА -->
+
 @login_required
 @teacher_required
 def teacher_lesson_update(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
     
-    #
-    # <-- 4. НОВАЯ ПРОВЕРКА ДОСТУПА -->
-    #
-    # Проверка, что учитель редактирует урок из модуля, к которому он привязан
     if request.user not in lesson.module.teachers.all():
          return HttpResponseForbidden("Вы не можете редактировать уроки в этом модуле.")
          
     if request.method == 'POST':
-        form = LessonForm(request.POST, instance=lesson, user=request.user)
+        # <-- Добавлен request.FILES для загрузки файлов -->
+        form = LessonForm(request.POST, request.FILES, instance=lesson, user=request.user)
         if form.is_valid():
             form.save()
             return redirect('core:profile')
@@ -253,7 +254,6 @@ def teacher_lesson_update(request, lesson_id):
         'form': form,
         'form_title': f'Редактировать урок: {lesson.title}'
     })
-
 @login_required
 @teacher_required
 def teacher_lesson_delete(request, lesson_id):
@@ -275,7 +275,153 @@ def teacher_lesson_delete(request, lesson_id):
 
 # <-- 8. НОВЫЕ VIEWS ДЛЯ ПРОСМОТРА УЧЕНИКОВ -->
 # (Список учеников теперь находится во view 'profile')
+@login_required
+@teacher_required
+def teacher_test_create(request, module_id):
+    module = get_object_or_404(Module, id=module_id)
+    
+    # Проверка, что учитель привязан к этому модулю
+    if request.user not in module.teachers.all():
+        return HttpResponseForbidden("Вы не можете добавлять тесты в этот модуль.")
+        
+    if request.method == 'POST':
+        form = TestForm(request.POST)
+        if form.is_valid():
+            test = form.save(commit=False)
+            test.module = module
+            test.save()
+            # Перенаправляем на страницу редактирования теста для добавления вопросов
+            return redirect('core:teacher_test_update', test_id=test.id)
+    else:
+        form = TestForm()
+        
+    return render(request, 'core/teacher/test_form.html', {
+        'form': form,
+        'form_title': f'Новый тест для модуля: {module.title}'
+    })
 
+@login_required
+@teacher_required
+def teacher_test_update(request, test_id):
+    test = get_object_or_404(Test.objects.prefetch_related('questions'), id=test_id)
+    
+    # Проверка, что учитель привязан к модулю этого теста
+    if request.user not in test.module.teachers.all():
+        return HttpResponseForbidden("Вы не можете редактировать этот тест.")
+        
+    # Форма для редактирования самого теста
+    if 'submit_test_form' in request.POST:
+        test_form = TestForm(request.POST, instance=test)
+        if test_form.is_valid():
+            test_form.save()
+            return redirect('core:teacher_test_update', test_id=test.id)
+    else:
+        test_form = TestForm(instance=test)
+        
+    # Форма для добавления НОВОГО вопроса
+    if 'submit_question_form' in request.POST:
+        question_form = QuestionForm(request.POST)
+        if question_form.is_valid():
+            question = question_form.save(commit=False)
+            question.test = test
+            question.save()
+            return redirect('core:teacher_test_update', test_id=test.id)
+    else:
+        question_form = QuestionForm()
+
+    return render(request, 'core/teacher/test_update_form.html', {
+        'test': test,
+        'test_form': test_form,
+        'question_form': question_form,
+        'questions': test.questions.all() # Передаем список вопросов
+    })
+
+@login_required
+@teacher_required
+def teacher_test_delete(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    if request.user not in test.module.teachers.all():
+         return HttpResponseForbidden("Вы не можете удалить этот тест.")
+         
+    if request.method == 'POST':
+        test.delete()
+        return redirect('core:profile')
+    
+    return render(request, 'core/teacher/confirm_delete.html', {
+        'object_name': f'тест "{test.title}"'
+    })
+
+@login_required
+@teacher_required
+def teacher_question_update(request, question_id):
+    question = get_object_or_404(TestQuestion.objects.select_related('test__module'), id=question_id)
+    test = question.test
+    
+    if request.user not in test.module.teachers.all():
+         return HttpResponseForbidden("Вы не можете редактировать этот вопрос.")
+         
+    if request.method == 'POST':
+        form = QuestionForm(request.POST, instance=question)
+        if form.is_valid():
+            form.save()
+            # Возвращаемся на страницу редактирования теста
+            return redirect('core:teacher_test_update', test_id=test.id)
+    else:
+        form = QuestionForm(instance=question)
+        
+    return render(request, 'core/teacher/question_form.html', {
+        'form': form,
+        'form_title': 'Редактировать вопрос'
+    })
+
+@login_required
+@teacher_required
+def teacher_question_delete(request, question_id):
+    question = get_object_or_404(TestQuestion.objects.select_related('test'), id=question_id)
+    test_id = question.test.id
+    
+    if request.user not in question.test.module.teachers.all():
+         return HttpResponseForbidden("Вы не можете удалить этот вопрос.")
+         
+    if request.method == 'POST':
+        question.delete()
+        return redirect('core:teacher_test_update', test_id=test_id)
+    
+    return render(request, 'core/teacher/confirm_delete.html', {
+        'object_name': f'вопрос "{question.text[:50]}..."'
+    })
+
+# ... (teacher_student_list, teacher_student_detail - без изменений) ...
+# ...
+
+# --- 8. НОВАЯ VIEW ДЛЯ УДАЛЕНИЯ ПРОГРЕССА УЧЕНИКА ---
+@login_required
+@teacher_required
+def teacher_remove_student(request, student_id):
+    student = get_object_or_404(User, id=student_id, role='student')
+    
+    if request.method == 'POST':
+        # Находим все модули, которые ведет этот учитель
+        teacher_modules = request.user.taught_modules.all()
+        
+        # Удаляем прогресс по урокам в этих модулях
+        Progress.objects.filter(
+            student=student, 
+            lesson__module__in=teacher_modules
+        ).delete()
+        
+        # Удаляем ответы на тесты в этих модулях
+        TestSubmission.objects.filter(
+            student=student, 
+            test__module__in=teacher_modules
+        ).delete()
+        
+        # Возвращаемся в профиль (вкладка "Мои ученики")
+        return redirect(reverse('core:profile') + '#my-students')
+    
+    return render(request, 'core/teacher/confirm_delete.html', {
+        'object_name': f'весь прогресс ученика {student.username}'
+    })
 @login_required
 @teacher_required
 def teacher_student_list(request):

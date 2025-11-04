@@ -1,79 +1,55 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Прогресс: {{ student.username }} - EduPlatform{% endblock %}
-
 {% block content %}
-<div class="course-layout">
-    <aside class="course-sidebar">
-        <div class="course-sidebar-header">
-             <a href="{% url 'core:index' %}" class="logo">...</a>
-        </div>
-        <nav class="course-sidebar-nav profile-nav">
-            <a href="{% url 'core:course' %}">Программа курса</a>
-            <a href="{% url 'core:profile' %}" class="active">Мой профиль</a>
-            <form action="{% url 'core:logout' %}" method="post">...</form>
-        </nav>
-    </aside>
+<div class="container mt-4">
+    <h2>Профиль студента: {{ student.username }}</h2>
+    <p>Email: {{ student.email }}</p>
+    <hr>
+    <h3>Прогресс по вашим курсам:</h3>
 
-    <main class="course-content">
-        <a href="{% url 'core:profile' %}#my-students" style="color: var(--color-text-muted); text-decoration: none; margin-bottom: var(--spacing-2); display: inline-block;">
-            &larr; К списку учеников
-        </a>
-        <h1>Прогресс: {{ student.username }}</h1>
-        <p style="font-size: 1.125rem; margin-top: calc(var(--spacing-2) * -1); color: var(--color-text-muted);">
-            {{ student.email }}
-        </p>
+    <h4 class="mt-4">Прогресс по урокам:</h4>
+    {% if progress %}
+        <ul class="list-group">
+            {% for p in progress %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ p.lesson.title }}</strong>
+                    <br>
+                    <small class="text-muted">Курс: {{ p.lesson.module.course.title }} / Модуль: {{ p.lesson.module.title }}</small>
+                </div>
+                {% if p.passed %}
+                    <span class="badge bg-success rounded-pill">Завершено</span>
+                {% else %}
+                    <span class="badge bg-warning rounded-pill">В процессе</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>У студента нет прогресса по вашим урокам.</p>
+    {% endif %}
 
-        <div class="card" style="margin-bottom: var(--spacing-8);">
-            <h2 style="margin-bottom: var(--spacing-6);">Прогресс по урокам (на ваших курсах)</h2>
-            {% if progress %}
-                <ul class="profile-progress-list">
-                    {% for prog in progress %}
-                        <li>
-                            <div>
-                                <span style="font-weight: 500;">{{ prog.lesson.title }}</span>
-                                <span style="font-size: 0.875rem; color: var(--color-text-muted); margin-left: var(--spacing-2);"> 
-                                    ({{ prog.lesson.module.course.title }} / {{ prog.lesson.module.title }})
-                                </span>
-                            </div>
-                            <span class="profile-progress-status {% if prog.passed %}status-passed{% else %}status-pending{% endif %}">
-                                {% if prog.passed %}Пройдено{% else %}Не пройдено{% endif %}
-                            </span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p style="margin-bottom: 0;">У ученика нет прогресса на ваших курсах.</p>
-            {% endif %}
-        </div>
-        
-        <div class="card">
-            <h2 style="margin-bottom: var(--spacing-6);">Результаты тестов (на ваших курсах)</h2>
-             {% if submissions %}
-                <ul class="profile-progress-list">
-                    {% for sub in submissions %}
-                        <li>
-                            <div>
-                                <span style="font-weight: 500;">{{ sub.test.title }}</span>
-                                <span style="font-size: 0.875rem; color: var(--color-text-muted); margin-left: var(--spacing-2);"> 
-                                    ({{ sub.test.module.course.title }} / {{ sub.test.module.title }})
-                                </span>
-                            </div>
-                            <span class="profile-progress-status {% if sub.passed %}status-passed{% else %}status-pending{% endif %}">
-                                {% if sub.passed %}
-                                    Пройден ({{ sub.score }} б.)
-                                {% else %}
-                                    Не пройден ({{ sub.score }} б.)
-                                {% endif %}
-                            </span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p style="margin-bottom: 0;">У ученика нет пройденных тестов на ваших курсах.</p>
-            {% endif %}
-        </div>
-    </main>
+    <h4 class="mt-4">Результаты тестов:</h4>
+    {% if submissions %}
+        <ul class="list-group">
+            {% for sub in submissions %}
+            <li class="list-group-item">
+                <strong>{{ sub.test.title }}</strong> (Модуль: {{ sub.test.module.title }})
+                <br>
+                Результат: <strong>{{ sub.score }}%</strong>
+                <span class="badge {% if sub.passed %}bg-success{% else %}bg-danger{% endif %}">
+                    {% if sub.passed %}Сдано{% else %}Не сдано{% endif %}
+                </span>
+                <br>
+                <small class="text-muted">Дата: {{ sub.submitted_at }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Студент еще не проходил тесты по вашим курсам.</p>
+    {% endif %}
+
+    <a href="{% url 'core:profile' %}" class="btn btn-secondary mt-4">Назад</a>
 </div>
 {% endblock %}

@@ -7,12 +7,20 @@
 <div class="course-layout">
     <aside class="course-sidebar">
         <div class="course-sidebar-header">
-             <a href="{% url 'core:index' %}" class="logo">...</a>
+            <a href="{% url 'core:index' %}" class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                </svg>
+                <span>EduPlatform</span>
+            </a>
         </div>
         <nav class="course-sidebar-nav profile-nav">
             <a href="{% url 'core:course' %}">Программа курса</a>
             <a href="{% url 'core:profile' %}" class="active">Мой профиль</a>
-            <form action="{% url 'core:logout' %}" method="post">...</form>
+            <form action="{% url 'core:logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Выйти</button>
+            </form>
         </nav>
     </aside>
 
@@ -20,7 +28,7 @@
         <h1>{{ form_title }}</h1>
 
         <div class="card">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 {% if form.non_field_errors %}
@@ -34,7 +42,22 @@
                 {% for field in form %}
                 <div class="form-group" style="margin-bottom: var(--spacing-5);">
                     <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    
+                    {% if field.name == 'video_file' or field.name == 'image_file' or field.name == 'pdf_file' %}
+                        {% if field.instance.url %}
+                            <p style="font-size: 0.875rem; margin-bottom: var(--spacing-2); color: var(--color-text-muted);">
+                                Текущий файл: <a href="{{ field.instance.url }}" target="_blank">{{ field.instance.name }}</a>
+                                <br>
+                                <label for="{{ field.id_for_label }}_clear" style="font-weight: normal; margin-left: var(--spacing-2);">
+                                    <input type="checkbox" name="{{ field.name }}-clear" id="{{ field.id_for_label }}_clear">
+                                    Удалить текущий файл
+                                </label>
+                            </p>
+                        {% endif %}
+                    {% endif %}
+                    
                     {{ field }}
+                    
                     {% if field.help_text %}
                         <p class="form-helptext">{{ field.help_text }}</p>
                     {% endif %}

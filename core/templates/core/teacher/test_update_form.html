@@ -1,0 +1,52 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            
+            <div class="card card-body mb-4">
+                <h2>Настройки теста: {{ test.title }}</h2>
+                <p class="text-muted">Модуль: {{ test.module.title }}</p>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ test_form.as_p }}
+                    <button type="submit" name="submit_test_form" class="btn btn-primary mt-2">Сохранить настройки теста</button>
+                </form>
+            </div>
+
+            <div class="card card-body mb-4">
+                <h3>Вопросы теста ({{ questions.count }})</h3>
+                <div id="questions-list">
+                    {% for q in questions %}
+                        <div class="card card-body mb-3">
+                            <p><strong>Вопрос:</strong> {{ q.text|linebreaksbr }}</p>
+                            <p><strong>Ответ:</strong> <code>{{ q.correct_answer }}</code></p>
+                            <p><strong>Балл:</strong> {{ q.max_score }}</p>
+                            <div>
+                                <a href="{% url 'core:teacher_question_update' q.id %}" class="btn btn-sm btn-outline-primary mb-2">Редактировать вопрос</a>
+                                <a href="{% url 'core:teacher_question_delete' q.id %}" class="btn btn-sm btn-outline-danger mb-2">Удалить вопрос</a>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p>Вопросов к этому тесту пока нет.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card card-body">
+                <h3>Добавить новый вопрос</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ question_form.as_p }}
+                    <button type="submit" name="submit_question_form" class="btn btn-success mt-2">Добавить вопрос</button>
+                </form>
+            </div>
+            
+            <a href="{% url 'core:profile' %}" class="btn btn-secondary mt-4">Назад в профиль</a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

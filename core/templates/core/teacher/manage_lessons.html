@@ -1,41 +1,29 @@
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-6);">
-        <h2>Управление уроками</h2>
-        <a href="{% url 'core:teacher_lesson_create' %}" class="btn btn-primary">
-            + Добавить урок
-        </a>
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Уроки для курса: {{ course.title }}</h2>
+    
+    <div class="list-group">
+        {% for lesson in lessons %}
+            <div class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ lesson.title }}</h5>
+                    <small>Модуль: {{ lesson.module.title }}</small>
+                </div>
+                <p class="mb-1">{{ lesson.description|truncatewords:30 }}</p>
+                <div>
+                    <a href="{% url 'core:teacher_lesson_update' lesson.id %}" class="btn btn-sm btn-primary">Редактировать</a>
+                    <a href="{% url 'core:teacher_lesson_delete' lesson.id %}" class="btn btn-sm btn-danger">Удалить</a>
+                </div>
+            </div>
+        {% empty %}
+            <p class="list-group-item">Для этого курса уроков пока нет.</p>
+        {% endfor %}
     </div>
 
-    {% if teacher_lessons %}
-        <ul class="profile-progress-list">
-            {% for lesson in teacher_lessons %}
-            <li style="display: grid; grid-template-columns: 1fr auto; gap: var(--spacing-4);">
-                <div>
-                    <span style="font-weight: 500;">{{ lesson.title }}</span>
-                    <span style="font-size: 0.875rem; color: var(--color-text-muted); margin-left: var(--spacing-2);">
-                        ({{ lesson.module.course.title }} / {{ lesson.module.title }})
-                    </span>
-                </div>
-                <div style="display: flex; gap: var(--spacing-3);">
-                    <a href="{% url 'core:lesson' lesson.id %}" class="btn btn-secondary btn-sm" target="_blank">
-                        Просмотр
-                    </a>
-                    <a href="{% url 'core:teacher_lesson_update' lesson.id %}" class="btn btn-secondary btn-sm">
-                        Изменить
-                    </a>
-                    <a href="{% url 'core:teacher_lesson_delete' lesson.id %}" class="btn btn-danger-outline btn-sm">
-                        Удалить
-                    </a>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p style="margin-bottom: 0;">Вы еще не добавили ни одного урока.</p>
-        {% if not teacher_courses %}
-        <p style="margin-top: var(--spacing-2); color: var(--color-text-muted);">
-            Попросите администратора или менеджера назначить вас преподавателем на курс в админ-панели.
-        </p>
-        {% endif %}
-    {% endif %}
+    <a href="{% url 'core:teacher_lesson_create' %}" class="btn btn-success mt-3">Добавить новый урок</a>
+    <a href="{% url 'core:profile' %}" class="btn btn-secondary mt-3">Назад к панели</a>
 </div>
+{% endblock %}
