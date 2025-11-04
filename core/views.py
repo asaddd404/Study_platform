@@ -51,40 +51,16 @@ def register(request):
 # --- 4. ОБНОВЛЕННАЯ VIEW ДЛЯ СТРАНИЦЫ КУРСА (для HTMX) ---
 @login_required
 # project/eduplatform/core/views.py
-
 @login_required
 def course(request):
     course = Course.objects.first()
     if not course:
         return render(request, 'core/course.html', {'error': 'Курс не найден'})
         
-    # 1. 'lessons' ДОБАВЛЕНЫ В prefetch_related
+    # --- 1. ДОБАВЛЯЕМ 'lessons' СЮДА ---
     modules = Module.objects.filter(course=course).order_by('created_at').prefetch_related('tests', 'lessons')
     
-    # 2. 'lessons_for_progress' используется для подсчета
-    lessons_for_progress = Lesson.objects.filter(module__course=course)
-    
-    completed_lessons = set()
-    progress_percentage = 0
-    
-    if request.user.is_authenticated:
-        # ... (логика прогресса) ...
-        if lessons_for_progress.count() > 0:
-            progress_percentage = (len(completed_lessons) / lessons_for_progress.count() * 100)
-        
-    context = {
-        'course': course,
-        'modules': modules,
-        # 3. 'lessons' УДАЛЕНЫ ИЗ КОНТЕКСТА (ЭТО ВАЖНО!)
-        'completed_lessons': completed_lessons,
-        'progress_percentage': progress_percentage,
-    }
-    return render(request, 'core/course.html', context)
-    # --- 1. ИЗМЕНЕНИЕ ЗДЕСЬ ---
-    # Добавляем .prefetch_related('lessons'), чтобы сразу загрузить уроки
-    modules = Module.objects.filter(course=course).order_by('created_at').prefetch_related('tests', 'lessons')
-    
-    # --- 2. ЭТОТ ЗАПРОС НУЖЕН ТОЛЬКО ДЛЯ СТАТИСТИКИ ПРОГРЕССА ---
+    # --- 2. ЭТОТ ЗАПРОС НУЖЕН ТОЛЬКО ДЛЯ СТАТИСТИКИ ---
     lessons_for_progress = Lesson.objects.filter(module__course=course)
     
     completed_lessons = set()
@@ -95,8 +71,7 @@ def course(request):
         progress = Progress.objects.filter(student=request.user, lesson__in=lessons_for_progress)
         completed_lessons = set(progress.filter(passed=True).values_list('lesson_id', flat=True))
         
-        # --- 3. ИЗМЕНЕНИЕ ЗДЕСЬ ---
-        # Считаем процент на основе lessons_for_progress
+        # --- 3. Считаем процент на основе lessons_for_progress
         if lessons_for_progress.count() > 0:
             progress_percentage = (len(completed_lessons) / lessons_for_progress.count() * 100)
         
@@ -104,11 +79,14 @@ def course(request):
         'course': course,
         'modules': modules,
         # --- 4. УБИРАЕМ 'lessons' ИЗ КОНТЕКСТА ---
-        # 'lessons': lessons, # <--- Эта строка больше не нужна
         'completed_lessons': completed_lessons,
         'progress_percentage': progress_percentage,
     }
     return render(request, 'core/course.html', context)
+
+
+
+
 # --- 5. СТАРЫЙ VIEW УРОКА (ДЛЯ ПРЯМЫХ ССЫЛОК, НЕ HTMX) ---
 @login_required
 def lesson(request, lesson_id):

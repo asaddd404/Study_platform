@@ -15,9 +15,13 @@
         <nav class="course-sidebar-nav" x-data="{ activeLesson: null }">
             {% for module in modules %}
             <div x-data="{ open: false }">
-                <ul class="lesson-list" x-show="open" style="display: none;">
-                    
-                    {% for lesson in module.lessons.all %}
+                <!-- ДОБАВЬ ЭТУ КНОПКУ ДЛЯ TOGGLE -->
+                <button class="module-toggle" @click="open = !open">
+                    {{ module.title }} 
+                    <span x-text="open ? '-' : '+'"></span>  <!-- + / - для индикации -->
+                </button>
+                <ul class="lesson-list" x-show="open" x-cloak>
+                                        {% for lesson in module.lessons.all %}
                     <li>
                         <button
                             hx-get="{% url 'core:partial_lesson_detail' lesson.id %}"
@@ -28,13 +32,14 @@
                         >
                             {{ lesson.title }}
                             {% if lesson.id in completed_lessons %}
-                            <svg class... >
-                                </svg>
+                            <svg class="lesson-status-icon completed-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                             {% endif %}
                         </button>
                     </li>
                     {% endfor %}
-                    ...
+                </ul>
             </div>
             {% endfor %}
         </nav>
