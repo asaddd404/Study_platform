@@ -11,7 +11,9 @@
                 <p class="text-muted">Модуль: {{ test.module.title }}</p>
                 <form method="post">
                     {% csrf_token %}
-                    {{ test_form.as_p }}
+                    <p>{{ test_form.title.label_tag }} {{ test_form.title }}</p>
+                    <p>{{ test_form.description.label_tag }} {{ test_form.description }}</p>
+                    <p>{{ test_form.passing_score.label_tag }} {{ test_form.passing_score }}</p>
                     <button type="submit" name="submit_test_form" class="btn btn-primary mt-2">Сохранить настройки теста</button>
                 </form>
             </div>
@@ -22,11 +24,24 @@
                     {% for q in questions %}
                         <div class="card card-body mb-3">
                             <p><strong>Вопрос:</strong> {{ q.text|linebreaksbr }}</p>
-                            <p><strong>Ответ:</strong> <code>{{ q.correct_answer }}</code></p>
+                            
+                            {% if q.question_type == 'choice' %}
+                                <ul style="list-style-type: lower-alpha; margin-left: 20px;">
+                                    {% if q.option_a %}<li>{{ q.option_a }}</li>{% endif %}
+                                    {% if q.option_b %}<li>{{ q.option_b }}</li>{% endif %}
+                                    {% if q.option_c %}<li>{{ q.option_c }}</li>{% endif %}
+                                    {% if q.option_d %}<li>{{ q.option_d }}</li>{% endif %}
+                                </ul>
+                                <p><strong>Правильный ответ:</strong> <code>{{ q.correct_answer }}</code></p>
+                            {% else %}
+                                <p><strong>Правильный ответ:</strong> <code>{{ q.correct_answer }}</code></p>
+                            {% endif %}
+                            
                             <p><strong>Балл:</strong> {{ q.max_score }}</p>
+                            
                             <div>
-                                <a href="{% url 'core:teacher_question_update' q.id %}" class="btn btn-sm btn-outline-primary mb-2">Редактировать вопрос</a>
-                                <a href="{% url 'core:teacher_question_delete' q.id %}" class="btn btn-sm btn-outline-danger mb-2">Удалить вопрос</a>
+                                <a href="{% url 'core:teacher_question_update' q.id %}" class="btn btn-sm btn-outline-primary mb-2">Редактировать</a>
+                                <a href="{% url 'core:teacher_question_delete' q.id %}" class="btn btn-sm btn-outline-danger mb-2">Удалить</a>
                             </div>
                         </div>
                     {% empty %}
@@ -37,9 +52,29 @@
 
             <div class="card card-body">
                 <h3>Добавить новый вопрос</h3>
-                <form method="post">
+                <form method="post" id="add-question-form">
                     {% csrf_token %}
-                    {{ question_form.as_p }}
+                    
+                    <p>{{ question_form.text.label_tag }} {{ question_form.text }}</p>
+                    
+                    <p>{{ question_form.question_type.label_tag }} {{ question_form.question_type }}</p>
+
+                    <div id="choice-fields-container" style="display: none;">
+                        <p>{{ question_form.option_a.label_tag }} {{ question_form.option_a }}</p>
+                        <p>{{ question_form.option_b.label_tag }} {{ question_form.option_b }}</p>
+                        <p>{{ question_form.option_c.label_tag }} {{ question_form.option_c }}</p>
+                        <p>{{ question_form.option_d.label_tag }} {{ question_form.option_d }}</p>
+                    </div>
+
+                    <p>
+                        {{ question_form.correct_answer.label_tag }} {{ question_form.correct_answer }}
+                        <small style="color: #666; font-size: 0.8rem; display: block; margin-top: 5px;" id="correct-answer-help">
+                           (Подсказка загрузится...)
+                        </small>
+                    </p>
+                    
+                    <p>{{ question_form.max_score.label_tag }} {{ question_form.max_score }}</p>
+                    
                     <button type="submit" name="submit_question_form" class="btn btn-success mt-2">Добавить вопрос</button>
                 </form>
             </div>
@@ -49,4 +84,36 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Находим наши элементы
+    // (id 'id_question_type_select' мы задали в forms.py)
+    const questionTypeSelect = document.getElementById('id_question_type_select');
+    const choiceFieldsContainer = document.getElementById('choice-fields-container');
+    const helpText = document.getElementById('correct-answer-help');
+
+    // Функция, которая решает, что показывать
+    function toggleFields() {
+        if (questionTypeSelect.value === 'choice') {
+            // Если выбрали "Выбор из вариантов"
+            choiceFieldsContainer.style.display = 'block'; // Показываем блок
+            helpText.textContent = '(Введите букву правильного варианта, например: a, b, c или d)';
+        } else { 
+            // Если выбрали "Точь-в-точь"
+            choiceFieldsContainer.style.display = 'none'; // Скрываем блок
+            helpText.textContent = '(Введите точный текстовый ответ)';
+        }
+    }
+
+    // Вызываем функцию 1 раз при загрузке страницы
+    toggleFields();
+
+    // Вызываем функцию каждый раз, когда меняется "Тип вопроса"
+    questionTypeSelect.addEventListener('change', toggleFields);
+});
+</script>
 {% endblock %}

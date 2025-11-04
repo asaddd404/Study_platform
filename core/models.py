@@ -149,11 +149,19 @@ class Resource(models.Model):
     def __str__(self):
         return self.title
 
+
+
 class Test(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="tests", verbose_name=_("Модуль"))
     title = models.CharField(max_length=200, verbose_name=_("Название теста"))
     description = models.TextField(blank=True, verbose_name=_("Описание"))
+    # --- НОВОЕ ПОЛЕ ---
+    passing_score = models.PositiveIntegerField(
+        default=70, 
+        validators=[MinValueValidator(0)], 
+        verbose_name=_("Проходной балл (в %)")
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата создания"))
 
     class Meta:
@@ -164,12 +172,39 @@ class Test(models.Model):
         return self.title
 
 class TestQuestion(models.Model):
+    # 1. ДОБАВЛЯЕМ ТИПЫ ВОПРОСОВ
+    QUESTION_TYPE_CHOICES = (
+        ('exact', 'Точь-в-точь (текстовый ответ)'),
+        ('choice', 'Выбор из вариантов'),
+    )
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="questions", verbose_name=_("Тест"))
     text = models.TextField(verbose_name=_("Текст вопроса"))
-    correct_answer = models.CharField(max_length=200, blank=True, verbose_name=_("Правильный ответ"))
-    max_score = models.PositiveIntegerField(default=10, verbose_name=_("Максимальный балл"))
+    
+    # 2. ДОБАВЛЯЕМ ПОЛЕ ДЛЯ ВЫБОРА ТИПА
+    question_type = models.CharField(
+        max_length=10,
+        choices=QUESTION_TYPE_CHOICES,
+        default='exact',
+        verbose_name="Тип вопроса"
+    )
 
+    # 3. ДОБАВЛЯЕМ ПОЛЯ ДЛЯ ВАРИАНТОВ ОТВЕТА
+    #    (они могут быть пустыми, если тип вопроса 'exact')
+    option_a = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант А")
+    option_b = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант Б")
+    option_c = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант В")
+    option_d = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант Г")
+
+    # 4. ПОЛЕ correct_answer ТЕПЕРЬ УНИВЕРСАЛЬНОЕ:
+    #    - Для типа 'exact' здесь хранится ТОЧНЫЙ ТЕКСТ ответа.
+    #    - Для типа 'choice' здесь хранится буква (a, b, c, d) правильного варианта.
+    correct_answer = models.CharField(max_length=255, verbose_name="Правильный ответ")
+    
+    max_score = models.PositiveIntegerField(default=1, verbose_name="Балл за ответ") # Изменил default=1
+    
+    created_at = models.DateTimeField(default=timezone.now)
     class Meta:
         verbose_name = _("Вопрос теста")
         verbose_name_plural = _("Вопросы теста")
@@ -181,7 +216,7 @@ class TestSubmission(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="submissions", verbose_name=_("Тест"))
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="test_submissions", verbose_name=_("Студент"))
-    score = models.FloatField(default=0, verbose_name=_("Балл"))
+    score = models.FloatField(default=0, verbose_name=_("Балл (%)")) # <-- Теперь это %
     submitted_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата отправки"))
     passed = models.BooleanField(default=False, verbose_name=_("Пройден"))
 
@@ -193,16 +228,49 @@ class TestSubmission(models.Model):
         return f"{self.student.username} - {self.test.title}"
 
     def calculate_score(self):
-        answers = self.answers.all()
+        """
+        Обновленная логика для подсчета очков.
+        Считает оба типа вопросов и сохраняет результат в процентах.
+        """
         total_score = 0
-        max_possible_score = sum(question.max_score for question in self.test.questions.all())
-        for answer in answers:
-            if answer.answer_text.lower() == answer.question.correct_answer.lower():
-                total_score += answer.question.max_score
-        self.score = total_score
-        self.passed = self.score >= (max_possible_score * 0.7)
+        max_possible_score = 0
+        
+        student_answers = self.answers.all()
+        all_questions = self.test.questions.all()
+
+        for question in all_questions:
+            max_possible_score += question.max_score
+            
+            # Находим ответ студента на этот вопрос
+            student_answer_obj = student_answers.filter(question=question).first()
+            
+            if student_answer_obj:
+                # Приводим оба ответа к нижнему регистру и убираем пробелы
+                student_answer_text = student_answer_obj.answer_text.strip().lower()
+                correct_answer_text = question.correct_answer.strip().lower()
+                
+                # НОВАЯ ЛОГИКА ПРОВЕРКИ
+                if question.question_type == 'choice':
+                    # Сравниваем буквы (например, 'a' == 'a')
+                    if student_answer_text == correct_answer_text:
+                        total_score += question.max_score
+                else: # question_type == 'exact'
+                    # Сравниваем текст (например, 'солнце' == 'солнце')
+                    if student_answer_text == correct_answer_text:
+                        total_score += question.max_score
+                        
+        # Считаем результат в процентах
+        if max_possible_score > 0:
+            self.score = (total_score / max_possible_score) * 100
+        else:
+            self.score = 0
+            
+        self.passed = self.score >= self.test.passing_score
         self.save()
         return self.score
+
+
+
 
 class TestAnswer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
