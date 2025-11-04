@@ -1,26 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User
-
-class RegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
-    password2 = forms.CharField(widget=forms.PasswordInput, label="Повторите пароль")
-
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Теперь безопасно:
-        self.fields['password'].widget.attrs.update({'placeholder': 'Пароль'})
-        self.fields['password2'].widget.attrs.update({'placeholder': 'Повторите'})
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if cleaned_data.get('password') != cleaned_data.get('password2'):
-            self.add_error('password2', 'Пароли не совпадают')
-        return cleaned_data
+from .models import User, Lesson, Module # <-- 1. ИМПОРТИРУЕМ Lesson и Module
+#
+# ИСПРАВЛЕНИЕ:
+# Класс RegisterForm был полностью удален,
+# так как он не шифровал пароль и больше не используется.
+#
 
 class CustomUserCreationForm(UserCreationForm):
     """
@@ -43,14 +28,19 @@ class CustomUserCreationForm(UserCreationForm):
         #
         self.fields['username'].widget.attrs.update({'class': 'form-input'})
         self.fields['email'].widget.attrs.update({'class': 'form-input'})
-        self.fields['password'].widget.attrs.update({'class': 'form-input'})
+        
+        #
+        # ИСПРАВЛЕНИЕ:
+        # Поля в UserCreationForm называются 'password1' и 'password2'
+        #
+        self.fields['password1'].widget.attrs.update({'class': 'form-input'})
         self.fields['password2'].widget.attrs.update({'class': 'form-input'})
         
         # Меняем лейблы
         self.fields['username'].label = "Логин (Имя пользователя)"
         self.fields['email'].label = "Email"
-        self.fields['password'].label = "Пароль"
-        self.fields['password2'].label = "Подтверждение пароля"
+        self.fields['password1'].label = "Пароль" # <-- ИСПРАВЛЕНО
+        self.fields['password2'].label = "Подтверждение пароля" # <-- ИСПРАВЛЕНО
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -83,3 +73,45 @@ class ProfileForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-input'}),
         }
+
+class LessonForm(forms.ModelForm):
+    """
+    Форма для создания и редактирования уроков учителем.
+    """
+    class Meta:
+        model = Lesson
+        # Убираем 'author' из полей, он будет назначаться автоматически
+        fields = ['module', 'title', 'content', 'video_url', 'assignment', 'is_free_preview']
+        widgets = {
+            'module': forms.Select(attrs={'class': 'form-input'}),
+            'title': forms.TextInput(attrs={'class': 'form-input'}),
+            'content': forms.Textarea(attrs={'class': 'form-input', 'rows': 10}),
+            'video_url': forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}),
+            'assignment': forms.Textarea(attrs={'class': 'form-input', 'rows': 5}),
+            'is_free_preview': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
+        }
+        labels = {
+            'module': 'Модуль',
+            'title': 'Название занятия',
+            'content': 'Содержание (текст урока)',
+            'video_url': 'Ссылка на видео (необязательно)',
+            'assignment': 'Задание к уроку (необязательно)',
+            'is_free_preview': 'Бесплатный предпросмотр (доступен без прохождения предыдущих)',
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None) 
+        super().__init__(*args, **kwargs)
+        
+        if user and user.role == 'teacher':
+            #
+            # <-- ИЗМЕНЕННАЯ ЛОГИКА -->
+            #
+            # Показываем только те модули, 
+            # в которых этот учитель числится в 'teachers'
+            self.fields['module'].queryset = Module.objects.filter(
+                teachers=user # <-- ВОТ ИЗМЕНЕНИЕ
+            ).select_related('course')
+            
+            # (Опционально) Делаем название модуля понятнее
+            self.fields['module'].label_from_instance = lambda obj: f"{obj.course.title} / {obj.title}"

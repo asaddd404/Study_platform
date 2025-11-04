@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ form_title }} - EduPlatform{% endblock %}
+
+{% block content %}
+<div class="course-layout">
+    <aside class="course-sidebar">
+        <div class="course-sidebar-header">
+             <a href="{% url 'core:index' %}" class="logo">...</a>
+        </div>
+        <nav class="course-sidebar-nav profile-nav">
+            <a href="{% url 'core:course' %}">Программа курса</a>
+            <a href="{% url 'core:profile' %}" class="active">Мой профиль</a>
+            <form action="{% url 'core:logout' %}" method="post">...</form>
+        </nav>
+    </aside>
+
+    <main class="course-content">
+        <h1>{{ form_title }}</h1>
+
+        <div class="card">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="form-errorlist" style="margin-bottom: var(--spacing-4);">
+                        {% for error in form.non_field_errors %}
+                            <p style="margin-bottom: 0;">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                <div class="form-group" style="margin-bottom: var(--spacing-5);">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="form-helptext">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="form-errorlist">
+                            {% for error in field.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-6);">
+                    <a href="{% url 'core:profile' %}#my-lessons" class="btn btn-secondary">Отмена</a>
+                    <button type="submit" class="btn btn-primary">
+                        Сохранить урок
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

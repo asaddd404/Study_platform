@@ -27,76 +27,147 @@
     <main class="course-content">
         <h1>Мой профиль</h1>
 
-        <div class="card" style="margin-bottom: var(--spacing-8);">
-            <h2 style="margin-bottom: var(--spacing-6);">Личная информация</h2>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary" style="margin-top: var(--spacing-4);">Сохранить</button>
-            </form>
+        <style>
+            .tabs { display: flex; border-bottom: 2px solid var(--color-border); margin-bottom: var(--spacing-6); }
+            .tab-link { padding: var(--spacing-3) var(--spacing-5); border: none; background: none; font-size: 1rem; cursor: pointer; color: var(--color-text-muted); border-bottom: 3px solid transparent; }
+            .tab-link.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 500; }
+            .tab-content { display: none; }
+            .tab-content.active { display: block; }
+        </style>
+        
+        <div class="tabs">
+            <button class="tab-link active" onclick="openTab(event, 'personal-info')">Личная информация</button>
+            
+            {% if user.role == 'student' %}
+                <button class="tab-link" onclick="openTab(event, 'my-progress')">Мой прогресс</button>
+            {% endif %}
+
+            {% if user.role == 'teacher' %}
+                <button class="tab-link" onclick="openTab(event, 'my-lessons')">Мои уроки</button>
+                <button class="tab-link" onclick="openTab(event, 'my-students')">Мои ученики</button>
+            {% endif %}
         </div>
 
-        {% if user.role == 'student' %}
+        <div id="personal-info" class="tab-content active">
             <div class="card">
-                <h2 style="margin-bottom: var(--spacing-6);">Прогресс обучения</h2>
-                {% if progress %}
-                    <ul class="profile-progress-list">
-                        {% for prog in progress %}
-                            <li>
-                                <div>
-                                    <span style="font-weight: 500;">{{ prog.lesson.title }}</span>
-                                    <span style="font-size: 0.875rem; color: var(--color-text-muted); margin-left: var(--spacing-2);"> ({{ prog.lesson.module.title }})</span>
-                                </div>
-                                <span class="profile-progress-status {% if prog.passed %}status-passed{% else %}status-pending{% endif %}">
-                                    {% if prog.passed %}Пройдено{% else %}Не пройдено{% endif %}
-                                </span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p style="margin-bottom: 0;">Прогресс отсутствует.</p>
-                {% endif %}
+                <h2 style="margin-bottom: var(--spacing-6);">Редактировать профиль</h2>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary" style="margin-top: var(--spacing-4);">Сохранить</button>
+                </form>
+            </div>
+        </div>
+        
+        {% if user.role == 'student' %}
+            <div id="my-progress" class="tab-content">
+                <div class="card">
+                    <h2 style="margin-bottom: var(--spacing-6);">Прогресс обучения</h2>
+                    {% if progress %}
+                        <ul class="profile-progress-list">
+                            {% for prog in progress %}
+                                <li>
+                                    <div>
+                                        <span style="font-weight: 500;">{{ prog.lesson.title }}</span>
+                                        <span style="font-size: 0.875rem; color: var(--color-text-muted); margin-left: var(--spacing-2);"> ({{ prog.lesson.module.title }})</span>
+                                    </div>
+                                    <span class="profile-progress-status {% if prog.passed %}status-passed{% else %}status-pending{% endif %}">
+                                        {% if prog.passed %}Пройдено{% else %}Не пройдено{% endif %}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p style="margin-bottom: 0;">Прогресс отсутствует.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if user.role == 'teacher' %}
+            <div id="my-lessons" class="tab-content">
+                {% include 'core/teacher/manage_lessons.html' %}
+            </div>
+        
+            <div id="my-students" class="tab-content">
+                <div class="card">
+                    <h2 style="margin-bottom: var(--spacing-6);">Список моих учеников</h2>
+                    
+                    <form method="get" action="{% url 'core:profile' %}" style="margin-bottom: var(--spacing-6); display: flex; gap: var(--spacing-3);">
+                        <input type="hidden" name="tab" value="my-students"> <input type="text" name="q" class="form-input" placeholder="Поиск по логину или email..." value="{{ search_query|default:'' }}" style="flex-grow: 1;">
+                        <button type="submit" class="btn btn-secondary">Найти</button>
+                    </form>
+
+                    {% if students_list %}
+                        <ul class="profile-progress-list">
+                            {% for student in students_list %}
+                                <li style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span style="font-weight: 500;">{{ student.username }}</span>
+                                        <span style="font-size: 0.875rem; color: var(--color-text-muted); margin-left: var(--spacing-2);"> ({{ student.email }})</span>
+                                    </div>
+                                    <a href="{% url 'core:teacher_student_detail' student.id %}" class="btn btn-secondary btn-sm">
+                                        Смотреть прогресс
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p style="margin-bottom: 0;">{% if search_query %}Ученики не найдены.{% else %}У вас пока нет учеников.{% endif %}</p>
+                    {% endif %}
+                </div>
             </div>
         {% endif %}
         
-        {% if user.role == 'teacher' and submissions %}
-            <div class="card" style="margin-top: var(--spacing-8);">
-                <h2 style="margin-bottom: var(--spacing-6);">Проверочные работы</h2>
-                {% for submission in submissions %}
-                    <div style="border-bottom: 1px solid var(--color-border); padding-bottom: var(--spacing-4); margin-bottom: var(--spacing-4);">
-                         <p><strong>Студент:</strong> {{ submission.student.username }}</p>
-                         <p><strong>Задание:</strong> {{ submission.assignment.title }}</p>
-                        
-                        <form method="post" style="margin-top: var(--spacing-4);">
-                            {% csrf_token %}
-                            <input type="hidden" name="submission_id" value="{{ submission.id }}">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4);">
-                                <div>
-                                    <label for="score-{{ submission.id }}" class="form-label">Оценка (0-100)</label>
-                                    <input type="number" name="score" id="score-{{ submission.id }}" min="0" max="100" class="form-input" value="{{ submission.score|default:'' }}">
-                                </div>
-                                <div>
-                                    <label for="status-{{ submission.id }}" class="form-label">Статус</label>
-                                    <select name="status" id="status-{{ submission.id }}" class="form-input"> <option value="pending" {% if submission.status == 'pending' %}selected{% endif %}>В ожидании</option>
-                                        <option value="approved" {% if submission.status == 'approved' %}selected{% endif %}>Одобрено</option>
-                                        <option value="rejected" {% if submission.status == 'rejected' %}selected{% endif %}>Отклонено</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div style="margin-top: var(--spacing-4);">
-                                <label for="feedback-{{ submission.id }}" class="form-label">Комментарий</label>
-                                <textarea name="teacher_feedback" id="feedback-{{ submission.id }}" rows="3" class="form-input">{{ submission.teacher_feedback|default:'' }}</textarea>
-                            </div>
-                            <div style="text-align: right; margin-top: var(--spacing-4);">
-                                <button type="submit" class="btn btn-primary btn-sm">Оценить</button>
-                            </div>
-                        </form>
-                    </div>
-                {% empty %}
-                     <p style="margin-bottom: 0;">Нет работ для проверки.</p>
-                {% endfor %}
-            </div>
-        {% endif %}
     </main>
 </div>
+
+<script>
+    function openTab(evt, tabName) {
+        // Скрываем все .tab-content
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+        // Убираем .active у всех .tab-link
+        tablinks = document.getElementsByClassName("tab-link");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+
+        // Показываем нужную вкладку и делаем кнопку активной
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+        
+        // (Опционально) Сохраняем в URL, чтобы не сбрасывалось при перезагрузке
+        if(history.pushState) {
+            history.pushState(null, null, '#'+tabName);
+        } else {
+            location.hash = '#'+tabName;
+        }
+    }
+
+    // Проверяем, есть ли хеш в URL при загрузке страницы
+    document.addEventListener("DOMContentLoaded", function() {
+        var hash = window.location.hash.substr(1);
+        if (hash) {
+            var tabToOpen = document.querySelector('.tab-link[onclick*="' + hash + '"]');
+            if (tabToOpen) {
+                tabToOpen.click();
+            }
+        }
+        
+        // Для формы поиска, чтобы оставаться на вкладке
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab) {
+             var tabToOpen = document.querySelector('.tab-link[onclick*="' + tab + '"]');
+            if (tabToOpen) {
+                tabToOpen.click();
+            }
+        }
+    });
+</script>
 {% endblock %}

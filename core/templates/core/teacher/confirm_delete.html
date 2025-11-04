@@ -1,0 +1,32 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Подтверждение удаления - EduPlatform{% endblock %}
+
+{% block content %}
+<div class="course-layout">
+    <aside class="course-sidebar">
+        </aside>
+
+    <main class="course-content">
+        <h1>Подтверждение удаления</h1>
+
+        <div class="card">
+            <form method="post">
+                {% csrf_token %}
+                <p style="font-size: 1.125rem; margin-bottom: var(--spacing-6);">
+                    Вы уверены, что хотите навсегда удалить {{ object_name }}?
+                </p>
+                <p>Это действие нельзя будет отменить.</p>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-6);">
+                    <a href="{% url 'core:profile' %}#my-lessons" class="btn btn-secondary">Нет, вернуться</a>
+                    <button type="submit" class="btn btn-danger">
+                        Да, удалить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

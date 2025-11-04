@@ -1,72 +1,73 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Module, Lesson, Resource, Test, TestQuestion, TestSubmission, TestAnswer, Progress
+from .models import (
+    User, Course, Module, Lesson, Resource, 
+    Test, TestQuestion, TestSubmission, TestAnswer, Progress
+)
 
-@admin.register(User)
-class UserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'role', 'is_teacher_approved', 'is_active')
-    list_filter = ('role', 'is_teacher_approved', 'is_active')
-    search_fields = ('username', 'email')
-    fieldsets = (
-        (None, {'fields': ('username', 'password')}),
-        ('Personal Info', {'fields': ('first_name', 'last_name', 'email', 'avatar', 'bio', 'phone')}),
-        ('Permissions', {'fields': ('role', 'is_teacher_approved', 'is_active', 'is_staff', 'is_superuser')}),
+# Переопределяем админку Пользователя
+class CustomUserAdmin(UserAdmin):
+    model = User
+    # Добавляем 'role' в список полей
+    fieldsets = UserAdmin.fieldsets + (
+        ('Дополнительные поля', {'fields': ('role', 'avatar', 'bio', 'phone', 'is_teacher_approved')}),
     )
+    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
+    list_filter = ('role', 'is_staff', 'is_superuser', 'is_active')
 
-class LessonInline(admin.StackedInline):
+admin.site.register(User, CustomUserAdmin)
+
+
+# --- НОВЫЙ БЛОК ДЛЯ УПРАВЛЕНИЯ КУРСАМИ ---
+
+# Позволяет добавлять Уроки прямо на странице Модуля
+class LessonInline(admin.TabularInline):
     model = Lesson
-    extra = 1
-    show_change_link = True
-    fields = ('title', 'content', 'video_url', 'is_free_preview')
+    extra = 1 # Показать 1 пустой слот для нового урока
+    fields = ('title', 'author', 'created_at')
+    readonly_fields = ('author', 'created_at') # Автор будет ставиться автоматически
 
-@admin.register(Module)
+# Админка для Модулей
 class ModuleAdmin(admin.ModelAdmin):
     list_display = ('title', 'course', 'created_at')
+    list_filter = ('course',)
     search_fields = ('title', 'description')
-    inlines = [LessonInline]
-    readonly_fields = ('created_at',)
+    
+    # <-- ВОТ ГЛАВНАЯ ЧАСТЬ -->
+    # Удобный интерфейс "двойного списка" для выбора учителей
+    filter_horizontal = ('teachers',)
+    
+    inlines = [LessonInline] # Показываем уроки внутри
 
-@admin.register(Lesson)
+admin.site.register(Module, ModuleAdmin)
+
+
+# Админка для Уроков
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('title', 'module', 'created_at')
-    list_filter = ('module', 'is_free_preview')
+    list_display = ('title', 'module', 'author', 'created_at')
+    list_filter = ('module__course', 'module', 'author')
     search_fields = ('title', 'content')
-    readonly_fields = ('created_at',)
+    # Делаем автора "только для чтения", т.к. он назначается при создании
+    readonly_fields = ('author',) 
 
-@admin.register(Resource)
-class ResourceAdmin(admin.ModelAdmin):
-    list_display = ('title', 'lesson', 'file', 'url', 'created_at')
-    search_fields = ('title',)
-    readonly_fields = ('created_at',)
+admin.site.register(Lesson, LessonAdmin)
 
-@admin.register(Test)
-class TestAdmin(admin.ModelAdmin):
-    list_display = ('title', 'module', 'created_at')
+
+# Админка для Курсов
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ('title', 'published', 'created_at')
+    list_filter = ('published',)
     search_fields = ('title', 'description')
-    readonly_fields = ('created_at',)
+    # Тоже добавляем удобный выбор
+    filter_horizontal = ('teachers',)
 
-@admin.register(TestQuestion)
-class TestQuestionAdmin(admin.ModelAdmin):
-    list_display = ('text', 'test', 'max_score')
-    search_fields = ('text',)
-    list_filter = ('test',)
+admin.site.register(Course, CourseAdmin)
 
-@admin.register(TestSubmission)
-class TestSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('student', 'test', 'score', 'passed', 'submitted_at')
-    list_filter = ('passed', 'test')
-    search_fields = ('student__username', 'test__title')
-    readonly_fields = ('submitted_at',)
 
-@admin.register(TestAnswer)
-class TestAnswerAdmin(admin.ModelAdmin):
-    list_display = ('submission', 'question', 'answer_text')
-    search_fields = ('answer_text',)
-    list_filter = ('submission',)
-
-@admin.register(Progress)
-class ProgressAdmin(admin.ModelAdmin):
-    list_display = ('student', 'lesson', 'passed', 'completed_at')
-    list_filter = ('passed', 'lesson')
-    search_fields = ('student__username', 'lesson__title')
-    readonly_fields = ('completed_at',)
+# ... (Регистрация остальных моделей, если нужно) ...
+admin.site.register(Resource)
+admin.site.register(Test)
+admin.site.register(TestQuestion)
+admin.site.register(TestSubmission)
+admin.site.register(TestAnswer)
+admin.site.register(Progress)

@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 import uuid
 
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('student', 'Ученик'),
@@ -45,6 +46,15 @@ class Course(models.Model):
     cover_image = models.ImageField(upload_to='course_covers/', blank=True, null=True, verbose_name=_("Обложка"))
     published = models.BooleanField(default=False, verbose_name=_("Опубликован"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата создания"))
+    
+    # <-- НОВОЕ ПОЛЕ: СВЯЗЬ С УЧИТЕЛЯМИ -->
+    teachers = models.ManyToManyField(
+        User, 
+        related_name="taught_courses", 
+        limit_choices_to={'role': 'teacher'}, 
+        blank=True,
+        verbose_name=_("Преподаватели")
+    )
 
     class Meta:
         verbose_name = _("Курс")
@@ -60,6 +70,15 @@ class Module(models.Model):
     description = models.TextField(blank=True, verbose_name=_("Описание"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата создания"))
 
+    # <-- 1. НОВОЕ ПОЛЕ: УЧИТЕЛЯ, ОТВЕТСТВЕННЫЕ ЗА МОДУЛЬ -->
+    teachers = models.ManyToManyField(
+        User,
+        related_name="taught_modules", # Новое связанное имя
+        limit_choices_to={'role': 'teacher'},
+        blank=True,
+        verbose_name=_("Преподаватели модуля")
+    )
+
     class Meta:
         verbose_name = _("Модуль")
         verbose_name_plural = _("Модули")
@@ -67,6 +86,7 @@ class Module(models.Model):
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
+
 
 class Lesson(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -76,7 +96,18 @@ class Lesson(models.Model):
     video_url = models.URLField(blank=True, null=True, verbose_name=_("URL видео"))
     is_free_preview = models.BooleanField(default=False, verbose_name=_("Бесплатный предпросмотр"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата создания"))
-    assignment = models.TextField(blank=True, verbose_name=_("Задание"))  # Добавленное поле
+    assignment = models.TextField(blank=True, verbose_name=_("Задание"))
+
+    # <-- 2. НОВОЕ ПОЛЕ: АВТОР УРОКА -->
+    author = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL, # Не удалять урок, если учитель удален
+        null=True,
+        blank=True,
+        related_name="authored_lessons",
+        limit_choices_to={'role': 'teacher'},
+        verbose_name=_("Автор урока")
+    )
 
     class Meta:
         verbose_name = _("Занятие")
@@ -85,6 +116,8 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.module.title} - {self.title}"
+
+# ... (остальные модели Resource, Test, TestQuestion, TestSubmission, TestAnswer, Progress без изменений) ...
 
 class Resource(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
