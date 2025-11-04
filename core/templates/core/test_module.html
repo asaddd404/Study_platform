@@ -74,21 +74,18 @@
                                     <label for="q_{{ question.id }}_a">{{ question.option_a }}</label>
                                 </div>
                                 {% endif %}
-                                
                                 {% if question.option_b %}
                                 <div style="margin-bottom: var(--spacing-2);">
                                     <input type="radio" name="answer_{{ question.id }}" id="q_{{ question.id }}_b" value="b" style="margin-right: 8px;">
                                     <label for="q_{{ question.id }}_b">{{ question.option_b }}</label>
                                 </div>
                                 {% endif %}
-                                
                                 {% if question.option_c %}
                                 <div style="margin-bottom: var(--spacing-2);">
                                     <input type="radio" name="answer_{{ question.id }}" id="q_{{ question.id }}_c" value="c" style="margin-right: 8px;">
                                     <label for="q_{{ question.id }}_c">{{ question.option_c }}</label>
                                 </div>
                                 {% endif %}
-                                
                                 {% if question.option_d %}
                                 <div style="margin-bottom: var(--spacing-2);">
                                     <input type="radio" name="answer_{{ question.id }}" id="q_{{ question.id }}_d" value="d" style="margin-right: 8px;">

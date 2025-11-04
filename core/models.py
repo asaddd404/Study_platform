@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
+from django.utils import timezone # <-- Убедитесь, что этот импорт есть
 import uuid
 
 
@@ -47,7 +47,6 @@ class Course(models.Model):
     published = models.BooleanField(default=False, verbose_name=_("Опубликован"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата создания"))
     
-    # <-- НОВОЕ ПОЛЕ: СВЯЗЬ С УЧИТЕЛЯМИ -->
     teachers = models.ManyToManyField(
         User, 
         related_name="taught_courses", 
@@ -70,10 +69,9 @@ class Module(models.Model):
     description = models.TextField(blank=True, verbose_name=_("Описание"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата создания"))
 
-    # <-- 1. НОВОЕ ПОЛЕ: УЧИТЕЛЯ, ОТВЕТСТВЕННЫЕ ЗА МОДУЛЬ -->
     teachers = models.ManyToManyField(
         User,
-        related_name="taught_modules", # Новое связанное имя
+        related_name="taught_modules", 
         limit_choices_to={'role': 'teacher'},
         blank=True,
         verbose_name=_("Преподаватели модуля")
@@ -88,15 +86,12 @@ class Module(models.Model):
         return f"{self.course.title} - {self.title}"
 
 
-pass
-
 class Lesson(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons", verbose_name=_("Модуль"))
     title = models.CharField(max_length=200, verbose_name=_("Название занятия"))
     content = models.TextField(blank=True, verbose_name=_("Содержание"))
     
-    # --- 1. ИЗМЕНЕНИЯ ЗДЕСЬ ---
     video_url = models.URLField(blank=True, null=True, verbose_name=_("URL видео (Youtube/Vimeo)"))
     
     video_file = models.FileField(
@@ -111,7 +106,6 @@ class Lesson(models.Model):
         upload_to='lesson_pdfs/', blank=True, null=True, 
         verbose_name=_("PDF-файл")
     )
-    # --- (Конец изменений) ---
     
     is_free_preview = models.BooleanField(default=False, verbose_name=_("Бесплатный предпросмотр"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата создания"))
@@ -149,8 +143,6 @@ class Resource(models.Model):
     def __str__(self):
         return self.title
 
-
-
 class Test(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="tests", verbose_name=_("Модуль"))
@@ -172,7 +164,7 @@ class Test(models.Model):
         return self.title
 
 class TestQuestion(models.Model):
-    # 1. ДОБАВЛЯЕМ ТИПЫ ВОПРОСОВ
+    # 1. ТИПЫ ВОПРОСОВ
     QUESTION_TYPE_CHOICES = (
         ('exact', 'Точь-в-точь (текстовый ответ)'),
         ('choice', 'Выбор из вариантов'),
@@ -182,7 +174,7 @@ class TestQuestion(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="questions", verbose_name=_("Тест"))
     text = models.TextField(verbose_name=_("Текст вопроса"))
     
-    # 2. ДОБАВЛЯЕМ ПОЛЕ ДЛЯ ВЫБОРА ТИПА
+    # 2. ПОЛЕ ДЛЯ ВЫБОРА ТИПА
     question_type = models.CharField(
         max_length=10,
         choices=QUESTION_TYPE_CHOICES,
@@ -190,21 +182,20 @@ class TestQuestion(models.Model):
         verbose_name="Тип вопроса"
     )
 
-    # 3. ДОБАВЛЯЕМ ПОЛЯ ДЛЯ ВАРИАНТОВ ОТВЕТА
-    #    (они могут быть пустыми, если тип вопроса 'exact')
+    # 3. ПОЛЯ ДЛЯ ВАРИАНТОВ ОТВЕТА
     option_a = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант А")
     option_b = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант Б")
     option_c = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант В")
     option_d = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант Г")
 
-    # 4. ПОЛЕ correct_answer ТЕПЕРЬ УНИВЕРСАЛЬНОЕ:
-    #    - Для типа 'exact' здесь хранится ТОЧНЫЙ ТЕКСТ ответа.
-    #    - Для типа 'choice' здесь хранится буква (a, b, c, d) правильного варианта.
+    # 4. УНИВЕРСАЛЬНЫЙ ПРАВИЛЬНЫЙ ОТВЕТ
     correct_answer = models.CharField(max_length=255, verbose_name="Правильный ответ")
     
-    max_score = models.PositiveIntegerField(default=1, verbose_name="Балл за ответ") # Изменил default=1
+    max_score = models.PositiveIntegerField(default=1, verbose_name="Балл за ответ")
     
-    created_at = models.DateTimeField(default=timezone.now)
+    # 5. ИСПРАВЛЕНИЕ ДЛЯ МИГРАЦИИ
+    created_at = models.DateTimeField(default=timezone.now, verbose_name=_("Дата создания"))
+
     class Meta:
         verbose_name = _("Вопрос теста")
         verbose_name_plural = _("Вопросы теста")
@@ -241,25 +232,20 @@ class TestSubmission(models.Model):
         for question in all_questions:
             max_possible_score += question.max_score
             
-            # Находим ответ студента на этот вопрос
             student_answer_obj = student_answers.filter(question=question).first()
             
             if student_answer_obj:
-                # Приводим оба ответа к нижнему регистру и убираем пробелы
                 student_answer_text = student_answer_obj.answer_text.strip().lower()
                 correct_answer_text = question.correct_answer.strip().lower()
                 
                 # НОВАЯ ЛОГИКА ПРОВЕРКИ
                 if question.question_type == 'choice':
-                    # Сравниваем буквы (например, 'a' == 'a')
                     if student_answer_text == correct_answer_text:
                         total_score += question.max_score
                 else: # question_type == 'exact'
-                    # Сравниваем текст (например, 'солнце' == 'солнце')
                     if student_answer_text == correct_answer_text:
                         total_score += question.max_score
                         
-        # Считаем результат в процентах
         if max_possible_score > 0:
             self.score = (total_score / max_possible_score) * 100
         else:
@@ -268,9 +254,6 @@ class TestSubmission(models.Model):
         self.passed = self.score >= self.test.passing_score
         self.save()
         return self.score
-
-
-
 
 class TestAnswer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

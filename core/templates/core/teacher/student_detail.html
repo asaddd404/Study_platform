@@ -2,13 +2,13 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container" style="padding-top: 40px; padding-bottom: 40px; max-width: 900px; margin: auto;">
     <h2>Профиль студента: {{ student.username }}</h2>
     <p>Email: {{ student.email }}</p>
     <hr>
     <h3>Прогресс по вашим курсам:</h3>
 
-    <h4 class="mt-4">Прогресс по урокам:</h4>
+    <h4 class="mt-4" style="margin-top: 20px;">Прогресс по урокам:</h4>
     {% if progress %}
         <ul class="list-group">
             {% for p in progress %}
@@ -30,7 +30,7 @@
         <p>У студента нет прогресса по вашим урокам.</p>
     {% endif %}
 
-    <h4 class="mt-4">Результаты тестов:</h4>
+    <h4 class="mt-4" style="margin-top: 20px;">Результаты тестов:</h4>
     {% if submissions %}
         <ul class="list-group">
             {% for sub in submissions %}
@@ -50,6 +50,6 @@
         <p>Студент еще не проходил тесты по вашим курсам.</p>
     {% endif %}
 
-    <a href="{% url 'core:profile' %}" class="btn btn-secondary mt-4">Назад</a>
+    <a href="{% url 'core:profile' %}" class="btn btn-secondary" style="margin-top: 20px;">Назад</a>
 </div>
 {% endblock %}

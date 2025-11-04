@@ -2,18 +2,16 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container" style="padding-top: 40px; padding-bottom: 40px; max-width: 900px; margin: auto;">
     <div class="row">
-        <div class="col-md-8 offset-md-2">
+        <div class="col-md-10 offset-md-1">
             
             <div class="card card-body mb-4">
                 <h2>Настройки теста: {{ test.title }}</h2>
                 <p class="text-muted">Модуль: {{ test.module.title }}</p>
                 <form method="post">
                     {% csrf_token %}
-                    <p>{{ test_form.title.label_tag }} {{ test_form.title }}</p>
-                    <p>{{ test_form.description.label_tag }} {{ test_form.description }}</p>
-                    <p>{{ test_form.passing_score.label_tag }} {{ test_form.passing_score }}</p>
+                    {{ test_form.as_p }}
                     <button type="submit" name="submit_test_form" class="btn btn-primary mt-2">Сохранить настройки теста</button>
                 </form>
             </div>
@@ -38,7 +36,6 @@
                             {% endif %}
                             
                             <p><strong>Балл:</strong> {{ q.max_score }}</p>
-                            
                             <div>
                                 <a href="{% url 'core:teacher_question_update' q.id %}" class="btn btn-sm btn-outline-primary mb-2">Редактировать</a>
                                 <a href="{% url 'core:teacher_question_delete' q.id %}" class="btn btn-sm btn-outline-danger mb-2">Удалить</a>
@@ -56,7 +53,6 @@
                     {% csrf_token %}
                     
                     <p>{{ question_form.text.label_tag }} {{ question_form.text }}</p>
-                    
                     <p>{{ question_form.question_type.label_tag }} {{ question_form.question_type }}</p>
 
                     <div id="choice-fields-container" style="display: none;">
@@ -69,17 +65,16 @@
                     <p>
                         {{ question_form.correct_answer.label_tag }} {{ question_form.correct_answer }}
                         <small style="color: #666; font-size: 0.8rem; display: block; margin-top: 5px;" id="correct-answer-help">
-                           (Подсказка загрузится...)
+                           (Подсказка...)
                         </small>
                     </p>
-                    
                     <p>{{ question_form.max_score.label_tag }} {{ question_form.max_score }}</p>
                     
                     <button type="submit" name="submit_question_form" class="btn btn-success mt-2">Добавить вопрос</button>
                 </form>
             </div>
             
-            <a href="{% url 'core:profile' %}" class="btn btn-secondary mt-4">Назад в профиль</a>
+            <a href="{% url 'core:profile' %}" class="btn btn-secondary" style="margin-top: 20px;">Назад в профиль</a>
 
         </div>
     </div>
@@ -90,29 +85,23 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Находим наши элементы
-    // (id 'id_question_type_select' мы задали в forms.py)
     const questionTypeSelect = document.getElementById('id_question_type_select');
+    if (!questionTypeSelect) return; // На случай, если элемента нет
+    
     const choiceFieldsContainer = document.getElementById('choice-fields-container');
     const helpText = document.getElementById('correct-answer-help');
 
-    // Функция, которая решает, что показывать
     function toggleFields() {
         if (questionTypeSelect.value === 'choice') {
-            // Если выбрали "Выбор из вариантов"
-            choiceFieldsContainer.style.display = 'block'; // Показываем блок
+            choiceFieldsContainer.style.display = 'block';
             helpText.textContent = '(Введите букву правильного варианта, например: a, b, c или d)';
         } else { 
-            // Если выбрали "Точь-в-точь"
-            choiceFieldsContainer.style.display = 'none'; // Скрываем блок
+            choiceFieldsContainer.style.display = 'none';
             helpText.textContent = '(Введите точный текстовый ответ)';
         }
     }
-
-    // Вызываем функцию 1 раз при загрузке страницы
+    
     toggleFields();
-
-    // Вызываем функцию каждый раз, когда меняется "Тип вопроса"
     questionTypeSelect.addEventListener('change', toggleFields);
 });
 </script>

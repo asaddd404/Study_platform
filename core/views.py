@@ -17,9 +17,6 @@ from django.urls import reverse
 
 # --- Декоратор для проверки Учителя ---
 def teacher_required(function):
-    """
-    Декоратор, который проверяет, что пользователь является аутентифицированным учителем.
-    """
     def wrap(request, *args, **kwargs):
         if request.user.is_authenticated and request.user.role == 'teacher':
             return function(request, *args, **kwargs)
@@ -29,7 +26,7 @@ def teacher_required(function):
     wrap.__name__ = function.__name__
     return wrap
 
-# --- (Остается, даже если не используется) ---
+# --- (Без изменений) ---
 def lesson_list_api(request):
     module_id = request.GET.get('module_id')
     if module_id:
@@ -38,8 +35,7 @@ def lesson_list_api(request):
         return JsonResponse({'lessons': lesson_data})
     return JsonResponse({'error': 'Module ID is required'}, status=400)
 
-# --- Главная, О нас, Регистрация, Выход ---
-
+# --- (Без изменений) ---
 def index(request):
     course = Course.objects.first()
     modules = Module.objects.filter(course=course).order_by('created_at') if course else []
@@ -57,7 +53,6 @@ def register(request):
             return redirect('core:profile')
     else:
         form = CustomUserCreationForm()
-
     return render(request, 'core/register.html', {'form': form})
 
 def custom_logout(request):
@@ -68,9 +63,7 @@ def custom_logout(request):
 
 @login_required
 def course(request):
-    """
-    Отображает ГЛАВНУЮ страницу курса со списком модулей и уроков.
-    """
+    # --- (Без изменений) ---
     course = Course.objects.first()
     if not course:
         return render(request, 'core/course.html', {'error': 'Курс не найден'})
@@ -78,7 +71,6 @@ def course(request):
     modules = Module.objects.filter(course=course).order_by('created_at')
     lessons = Lesson.objects.filter(module__course=course)
     
-    # Получаем пройденные уроки для боковой панели
     completed_lessons = set(Progress.objects.filter(
         student=request.user, 
         passed=True
@@ -92,10 +84,15 @@ def course(request):
     }
     return render(request, 'core/course.html', context)
 
+
+# --- 
+# --- 👇 ВОТ ГЛАВНОЕ ИСПРАВЛЕНИЕ ДЛЯ СТУДЕНТА (НАЧАЛО) 👇 ---
+# ---
+
 @login_required
 def lesson(request, lesson_id):
     """
-    Отображает ОТДЕЛЬНУЮ страницу для одного урока.
+    Отображает ОТДЕЛЬНУЮ, ПОЛНОЦЕННУЮ страницу для одного урока.
     """
     lesson = get_object_or_404(Lesson.objects.select_related('module__course'), id=lesson_id)
     course = lesson.module.course # Нужен для боковой панели
@@ -109,6 +106,7 @@ def lesson(request, lesson_id):
         passed=True
     ).values_list('lesson_id', flat=True))
         
+    # Рендерим ПОЛНУЮ страницу (lesson.html С {% extends 'core/base.html' %})
     return render(request, 'core/lesson.html', { 
         'lesson': lesson, 
         'assignment': lesson.assignment,
@@ -117,11 +115,10 @@ def lesson(request, lesson_id):
         'course': course, # Передаем курс для боковой панели
         'completed_lessons': completed_lessons # Передаем для боковой панели
     })
-
 @login_required
 def complete_lesson(request, lesson_id):
     """
-    Обрабатывает нажатие кнопки "Пройти урок".
+    Обрабатывает нажатие кнопки "Пройти урок" и перезагружает страницу.
     """
     if request.method == 'POST':
         lesson = get_object_or_404(Lesson, id=lesson_id)
@@ -135,10 +132,12 @@ def complete_lesson(request, lesson_id):
     # Возвращаем пользователя обратно на эту же страницу урока
     return redirect('core:lesson', lesson_id=lesson_id)
 
+# ... (lesson_description, lesson_resources БЕЗ ИЗМЕНЕНИЙ) ...
+
 @login_required
 def test_module(request, module_id):
     """
-    Отображает ОТДЕЛЬНУЮ страницу для теста (GET) или принимает ответы (POST).
+    Отображает ОТДЕЛЬНУЮ, ПОЛНОЦЕННУЮ страницу для теста (GET) или принимает ответы (POST).
     """
     module = get_object_or_404(Module, id=module_id)
     course = module.course # Нужен для боковой панели
@@ -152,7 +151,7 @@ def test_module(request, module_id):
     try:
         test = Test.objects.get(module=module)
     except Test.DoesNotExist:
-        # Страница "Тест не найден"
+        # Страница "Тест не найден" (тоже должна наследовать base.html)
         return render(request, 'core/locked.html', {
             'lesson': None, 
             'message': 'Тест для этого модуля еще не создан.',
@@ -162,7 +161,7 @@ def test_module(request, module_id):
         
     lessons = Lesson.objects.filter(module=module)
     
-    # (Можете добавить сюда логику блокировки, если уроки не пройдены)
+    # (Логика блокировки, если уроки не пройдены)
         
     if request.method == 'POST':
         # --- Логика ПРОВЕРКИ ТЕСТА ---
@@ -189,16 +188,13 @@ def test_module(request, module_id):
         'course': course, 
         'completed_lessons': completed_lessons
     })
+# --- 👆 КОНЕЦ ИСПРАВЛЕНИЙ ДЛЯ СТУДЕНТА 👆 ---
+# ---
 
 
-# --- Профиль (Общая страница для Студента и Учителя) ---
-
+# --- Профиль (Без изменений) ---
 @login_required
 def profile(request):
-    """
-    Отображает профиль.
-    Для Учителя - это главная панель управления.
-    """
     profile_form = ProfileForm(instance=request.user)
     if request.method == 'POST' and 'username' in request.POST: 
         profile_form = ProfileForm(request.POST, request.FILES, instance=request.user)
@@ -211,20 +207,14 @@ def profile(request):
     }
 
     if request.user.role == 'student':
-        # Логика для студента (например, показать курсы)
         pass
 
     if request.user.role == 'teacher':
-        # --- Логика для Учителя ---
-        
-        # Получаем модули и сразу все связанные с ними уроки и тесты
         teacher_modules = request.user.taught_modules.all().prefetch_related(
             'lessons', 'tests'
         )
-        
         context['teacher_modules'] = teacher_modules
         
-        # Ищем студентов
         student_ids = Progress.objects.filter(
             lesson__module__in=teacher_modules
         ).values_list('student_id', flat=True).distinct()
@@ -242,6 +232,7 @@ def profile(request):
 
 
 # --- Views для Учителя (Уроки) ---
+# --- (Без изменений) ---
 
 @login_required
 @teacher_required
@@ -305,6 +296,7 @@ def teacher_lesson_delete(request, lesson_id):
     })
 
 # --- Views для Учителя (Тесты) ---
+# --- (Без изменений) ---
 
 @login_required
 @teacher_required
@@ -378,6 +370,7 @@ def teacher_test_delete(request, test_id):
     })
 
 # --- Views для Учителя (Вопросы) ---
+# --- (Без изменений) ---
 
 @login_required
 @teacher_required
@@ -419,12 +412,11 @@ def teacher_question_delete(request, question_id):
     })
 
 # --- Views для Учителя (Студенты) ---
+# --- (Без изменений) ---
 
 @login_required
 @teacher_required
 def teacher_student_list(request):
-    # Эта логика теперь живет в 'profile', 
-    # просто перенаправляем туда.
     return redirect('core:profile') 
 
 @login_required
@@ -434,20 +426,16 @@ def teacher_student_detail(request, student_id):
     
     teacher_courses = request.user.taught_courses.all()
     
-    # Получаем прогресс студента ТОЛЬКО по курсам этого учителя
     progress = Progress.objects.filter(
         student=student,
         lesson__module__course__in=teacher_courses
     ).select_related('lesson', 'lesson__module').order_by('lesson__created_at')
     
-    # Получаем сдачи тестов студента ТОЛЬКО по курсам этого учителя
     submissions = TestSubmission.objects.filter(
         student=student,
         test__module__course__in=teacher_courses
     ).select_related('test', 'test__module').order_by('-submitted_at')
     
-    # Важно: эта view использует 'student_detail.html', 
-    # который должен наследовать 'base.html'
     return render(request, 'core/teacher/student_detail.html', {
         'student': student,
         'progress': progress,
@@ -479,7 +467,8 @@ def teacher_remove_student(request, student_id):
     })
 
 
-# --- (Неиспользуемые views, которые можно оставить) ---
+# --- (Неиспользуемые views) ---
+# --- (Без изменений) ---
 
 @login_required
 def lesson_description(request, lesson_id):

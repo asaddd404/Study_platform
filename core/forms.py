@@ -1,52 +1,26 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User, Lesson, Module,Test, TestQuestion # # <-- 1. ИМПОРТИРУЕМ Lesson и Module
+from .models import User, Lesson, Module, Test, TestQuestion
 
-# ИСПРАВЛЕНИЕ:
-# Класс RegisterForm был полностью удален,
-# так как он не шифровал пароль и больше не используется.
-#
 
 class CustomUserCreationForm(UserCreationForm):
-    """
-    Кастомная форма регистрации.
-    """
     class Meta(UserCreationForm.Meta):
         model = User
-        #
-        # ИСПРАВЛЕНИЕ:
-        # Мы наследуем поля (username, password, password2) из UserCreationForm.Meta.fields
-        # и ДОБАВЛЯЕМ к ним 'email'.
-        #
         fields = UserCreationForm.Meta.fields + ('email',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #
-        # Теперь 'password' и 'password2' 100% существуют в self.fields,
-        # и ошибки KeyError не будет.
-        #
         self.fields['username'].widget.attrs.update({'class': 'form-input'})
         self.fields['email'].widget.attrs.update({'class': 'form-input'})
-        
-        #
-        # ИСПРАВЛЕНИЕ:
-        # Поля в UserCreationForm называются 'password1' и 'password2'
-        #
-        self.fields['password1'].widget.attrs.update({'class': 'form-input'})
+        self.fields['password'].widget.attrs.update({'class': 'form-input'})
         self.fields['password2'].widget.attrs.update({'class': 'form-input'})
-        
-        # Меняем лейблы
         self.fields['username'].label = "Логин (Имя пользователя)"
         self.fields['email'].label = "Email"
-        self.fields['password1'].label = "Пароль" # <-- ИСПРАВЛЕНО
-        self.fields['password2'].label = "Подтверждение пароля" # <-- ИСПРАВЛЕНО
+        self.fields['password'].label = "Пароль"
+        self.fields['password2'].label = "Подтверждение пароля"
 
 
 class CustomAuthenticationForm(AuthenticationForm):
-    """
-    Кастомная форма входа (логина).
-    """
     username = forms.CharField(
         label='Логин',
         widget=forms.TextInput(attrs={'class': 'form-input', 'autofocus': True})
@@ -58,9 +32,6 @@ class CustomAuthenticationForm(AuthenticationForm):
     )
 
 class ProfileForm(forms.ModelForm):
-    """
-    Форма профиля (добавляем CSS-классы).
-    """
     class Meta:
         model = User
         fields = ['username', 'email', 'avatar', 'bio', 'phone', 'first_name', 'last_name']
@@ -74,12 +45,8 @@ class ProfileForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-input'}),
         }
 class LessonForm(forms.ModelForm):
-    """
-    Форма для создания и редактирования уроков учителем.
-    """
     class Meta:
         model = Lesson
-        # --- 2. ОБНОВЛЕННЫЙ СПИСОК ПОЛЕЙ ---
         fields = [
             'module', 'title', 'content', 
             'video_url', 'video_file', 'image_file', 'pdf_file', 
@@ -90,25 +57,23 @@ class LessonForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-input'}),
             'content': forms.Textarea(attrs={'class': 'form-input', 'rows': 10}),
             'video_url': forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}),
-            'video_file': forms.FileInput(attrs={'class': 'form-input'}), # <-- Новое
-            'image_file': forms.FileInput(attrs={'class': 'form-input'}), # <-- Новое
-            'pdf_file': forms.FileInput(attrs={'class': 'form-input'}),   # <-- Новое
+            'video_file': forms.FileInput(attrs={'class': 'form-input'}),
+            'image_file': forms.FileInput(attrs={'class': 'form-input'}),
+            'pdf_file': forms.FileInput(attrs={'class': 'form-input'}),
             'assignment': forms.Textarea(attrs={'class': 'form-input', 'rows': 5}),
             'is_free_preview': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
         labels = {
-            # ... (старые лейблы) ...
             'video_url': 'Ссылка на видео (Youtube/Vimeo)',
-            'video_file': 'Или загрузите видео-файл',         # <-- Новое
-            'image_file': 'Или загрузите изображение',     # <-- Новое
-            'pdf_file': 'Или загрузите PDF-документ',         # <-- Новое
+            'video_file': 'Или загрузите видео-файл',
+            'image_file': 'Или загрузите изображение',
+            'pdf_file': 'Или загрузите PDF-документ',
         }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None) 
         super().__init__(*args, **kwargs)
         
-        # Убираем 'required' у URL, так как можно загрузить файл
         self.fields['video_url'].required = False 
         
         if user and user.role == 'teacher':
@@ -117,12 +82,9 @@ class LessonForm(forms.ModelForm):
             ).select_related('course')
             self.fields['module'].label_from_instance = lambda obj: f"{obj.course.title} / {obj.title}"
 
-# --- 3. НОВЫЕ ФОРМЫ ДЛЯ ТЕСТОВ ---
+# --- 3. ОБНОВЛЕННЫЕ ФОРМЫ ДЛЯ ТЕСТОВ ---
 
 class TestForm(forms.ModelForm):
-    """
-    Форма для создания/редактирования Теста
-    """
     class Meta:
         model = Test
         # --- ДОБАВЛЕНО ПОЛЕ ---
@@ -139,9 +101,6 @@ class TestForm(forms.ModelForm):
         }
 
 class QuestionForm(forms.ModelForm):
-    """
-    Форма для создания/редактирования Вопроса к тесту
-    """
     class Meta:
         model = TestQuestion
         # --- ДОБАВЛЕНЫ НОВЫЕ ПОЛЯ ---
