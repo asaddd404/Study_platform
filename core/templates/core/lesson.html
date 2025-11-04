@@ -4,14 +4,15 @@
 {% block title %}{{ lesson.title }} | {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class.course-layout">
+<div class="course-layout">
+    
     <aside class="course-sidebar">
-        <h3>{{ lesson.module.course.title }}</h3>
+        <h3>{{ course.title }}</h3>
         <a href="{% url 'core:course' %}" class="back-link" style="margin-bottom: 20px;">&larr; Назад к курсу</a>
         
         <nav class="course-nav">
             <ul>
-                {% for module in lesson.module.course.modules.all %}
+            {% for module in course.modules.all %}
                 <li>
                     <strong class="module-title">{{ module.title }}</strong>
                     <ul class="lesson-list">
@@ -19,18 +20,31 @@
                         <li>
                             <a href="{% url 'core:lesson' l.id %}" 
                                class="{% if l.id == lesson.id %}active{% endif %}">
+                                
+                                {% if l.id in completed_lessons %}
+                                    <span class="lesson-status done">✓</span>
+                                {% else %}
+                                    <span class="lesson-status"></span>
+                                {% endif %}
                                 {{ l.title }}
                             </a>
                         </li>
                         {% endfor %}
                     </ul>
+                    {% for test in module.tests.all %}
+                        <div class="test-link-wrapper">
+                            <a href="{% url 'core:test_module' module.id %}" class="test-link">
+                                <strong>★ Тест: {{ test.title }}</strong>
+                            </a>
+                        </div>
+                    {% endfor %}
                 </li>
-                {% endfor %}
+            {% endfor %}
             </ul>
         </nav>
     </aside>
 
-    <main class="course-content">
+    <main class="course-content" id="lesson-main-content">
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-4);">
             <h1>{{ lesson.title }}</h1>
@@ -66,25 +80,31 @@
                 <p>Видео или изображение для этого урока не загружено.</p>
             {% endif %}
         </div>
-
-        <div class="tab-buttons" style="margin-top: var(--spacing-6);">
-            <button class="tab-button active" 
-                    hx-get="{% url 'core:lesson_description' lesson.id %}" 
-                    hx-target="#lesson-tab-content"
-                    hx-swap="innerHTML">
-                Описание
-            </button>
-            <button class="tab-button" 
-                    hx-get="{% url 'core:lesson_resources' lesson.id %}" 
-                    hx-target="#lesson-tab-content"
-                    hx-swap="innerHTML">
-                Ресурсы ({{ resources.count }})
-            </button>
-        </div>
-
-        <div id="lesson-tab-content" class="lesson-content-card">
+        
+        <div class="lesson-content-card" style="margin-top: var(--spacing-6);">
+            <h3>Описание</h3>
             {{ lesson.content|linebreaks }}
         </div>
+
+        <div class="lesson-content-card" style="margin-top: var(--spacing-6);">
+            <h3>Ресурсы</h3>
+            {% if resources %}
+                <ul>
+                    {% for resource in resources %}
+                        <li>
+                            {% if resource.file %}
+                                <a href="{{ resource.file.url }}" download>{{ resource.title }}</a>
+                            {% elif resource.url %}
+                                <a href="{{ resource.url }}" target="_blank">{{ resource.title }}</a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Ресурсов для этого урока нет.</p>
+            {% endif %}
+        </div>
+        
     </main>
 </div>
 {% endblock %}

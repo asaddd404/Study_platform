@@ -1,21 +1,70 @@
-<div class="lesson-content-card">
-    <h1 style="text-align: center;">Результаты теста</h1>
-    <h3 style="text-align: center; color: var(--color-text-muted); margin-bottom: var(--spacing-8);">{{ test.title }}</h3>
+{% extends 'core/base.html' %}
+{% load static %}
 
-    {% if submission.passed %}
-        <div style="background-color: var(--color-success-light); color: var(--color-success); padding: var(--spacing-6); border-radius: var(--border-radius); text-align: center;">
-            <h2 style="color: var(--color-success); margin-bottom: var(--spacing-2);">Тест пройден!</h2>
-            <p style="color: var(--color-success); font-size: 1.25rem; font-weight: 500; margin-bottom: 0;">Ваш балл: {{ submission.score }}</p>
-        </div>
-    {% else %}
-        <div style="background-color: #FFFBEB; color: #D97706; padding: var(--spacing-6); border-radius: var(--border-radius); text-align: center;">
-            <h2 style="color: #D97706; margin-bottom: var(--spacing-2);">Тест не пройден</h2>
-            <p style="color: #D97706; font-size: 1.25rem; font-weight: 500; margin-bottom: 0;">Ваш балл: {{ submission.score }}</p>
-            <p style="color: #B45309; margin-top: var(--spacing-4); margin-bottom: 0;">Попробуйте еще раз.</p>
-        </div>
-    {% endif %}
+{% block title %}Результат теста: {{ test.title }} | {{ block.super }}{% endblock %}
 
-    <div style="text-align: center; margin-top: var(--spacing-8);">
-         <a href="{% url 'core:course' %}" class="btn btn-primary">Вернуться к курсу</a>
-    </div>
+{% block content %}
+<div class="course-layout">
+    
+    <aside class="course-sidebar">
+        <h3>{{ course.title }}</h3>
+        <a href="{% url 'core:course' %}" class="back-link" style="margin-bottom: 20px;">&larr; Назад к курсу</a>
+        
+        <nav class="course-nav">
+            <ul>
+            {% for m in course.modules.all %}
+                <li>
+                    <strong class="module-title">{{ m.title }}</strong>
+                    <ul class="lesson-list">
+                        {% for l in m.lessons.all %}
+                        <li>
+                            <a href="{% url 'core:lesson' l.id %}" class="">
+                                {% if l.id in completed_lessons %}
+                                    <span class="lesson-status done">✓</span>
+                                {% else %}
+                                    <span class="lesson-status"></span>
+                                {% endif %}
+                                {{ l.title }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% for t in m.tests.all %}
+                        <div class="test-link-wrapper">
+                            <a href="{% url 'core:test_module' m.id %}" 
+                               class="test-link {% if t.id == test.id %}active{% endif %}">
+                                <strong>★ Тест: {{ t.title }}</strong>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </li>
+            {% endfor %}
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="course-content" id="lesson-main-content">
+        
+        <div class="lesson-content-card">
+            <h2>Результаты теста: {{ test.title }}</h2>
+            
+            {% if submission.passed %}
+                <div class.alert alert-success">
+                    <h3>Поздравляем! Тест пройден.</h3>
+                    <p>Ваш результат: <strong>{{ submission.score|floatformat:0 }}%</strong> (Проходной балл: {{ test.passing_score }}%)</p>
+                </div>
+            {% else %}
+                <div class="alert alert-danger">
+                    <h3>Тест не пройден.</h3>
+                    <p>Ваш результат: <strong>{{ submission.score|floatformat:0 }}%</strong> (Проходной балл: {{ test.passing_score }}%)</p>
+                    <p>Попробуйте еще раз.</p>
+                </div>
+            {% endif %}
+            
+            <a href="{% url 'core:course' %}" class="btn btn-secondary" style="margin-top: 20px;">Вернуться к курсу</a>
+            
+            </div>
+
+    </main>
 </div>
+{% endblock %}
