@@ -1,130 +1,90 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}{{ lesson.title }} - EduPlatform{% endblock %}
+{% block title %}{{ lesson.title }} | {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="course-layout">
+<div class.course-layout">
     <aside class="course-sidebar">
-        </aside>
-
-    <main class="course-content">
-        <a href="{% url 'core:course' %}" class="back-link">&larr; Вернуться к программе</a>
+        <h3>{{ lesson.module.course.title }}</h3>
+        <a href="{% url 'core:course' %}" class="back-link" style="margin-bottom: 20px;">&larr; Назад к курсу</a>
         
-        {% if lesson.video_file %}
-            <div class="video-container">
-                <video controls style="width: 100%; border-radius: var(--border-radius-lg);">
-                    <source src="{{ lesson.video_file.url }}" type="video/mp4">
-                    Ваш браузер не поддерживает тег video.
-                </video>
-            </div>
-            
-        {% elif lesson.video_url %}
-             <div class="video-container">
-                <iframe 
-                    src="{{ lesson.video_url }}" 
-                    frameborder="0" 
-                    allow="autoplay; fullscreen; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-        
-        {% elif lesson.image_file %}
-             <img src="{{ lesson.image_file.url }}" alt="{{ lesson.title }}" style="width: 100%; border-radius: var(--border-radius-lg);">
-        
-        {% endif %}
-        
-        <h1>{{ lesson.title }}</h1>
-        <p class="lesson-module-name">{{ lesson.module.course.title }} / {{ lesson.module.title }}</p>
-        
-        {% if user.is_authenticated and user.role == 'student' %}
-            <div class="lesson-completion-box">
-                {% if progress.passed %}
-                    <div class="status-passed" style="padding: var(--spacing-4); text-align: center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 24px; height: 24px; margin-right: var(--spacing-2); vertical-align: middle;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <strong>Урок пройден!</strong> ({{ progress.completed_at|date:"d.m.Y" }})
-                    </div>
-                {% else %}
-                    <form action="{% url 'core:complete_lesson' lesson.id %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary btn-block">
-                            Отметить урок как пройденный
-                        </button>
-                    </form>
-                {% endif %}
-            </div>
-        {% endif %}
-
-        <div class="tabs lesson-tabs">
-            <button class.="tab-link active" onclick="openTab(event, 'description')">Описание</button>
-            {% if lesson.assignment %}
-            <button class.="tab-link" onclick="openTab(event, 'assignment')">Задание</button>
-            {% endif %}
-            {% if resources or lesson.pdf_file %}
-            <button class.="tab-link" onclick="openTab(event, 'resources')">Материалы</button>
-            {% endif %}
-        </div>
-
-        <div id="description" class="tab-content active lesson-content-block">
-            {{ lesson.content|linebreaks }}
-        </div>
-        
-        {% if lesson.assignment %}
-        <div id="assignment" class.tab-content lesson-content-block">
-            {{ lesson.assignment|linebreaks }}
-        </div>
-        {% endif %}
-        
-        {% if resources or lesson.pdf_file %}
-        <div id="resources" class.tab-content lesson-content-block">
-            <ul class="resource-list">
-                {% if lesson.pdf_file %}
+        <nav class="course-nav">
+            <ul>
+                {% for module in lesson.module.course.modules.all %}
                 <li>
-                    <a href="{{ lesson.pdf_file.url }}" target="_blank">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625a3 3 0 00-3 3v12a3 3 0 003 3h12.75a3 3 0 003-3v-5.25" />
-                        </svg>
-                        {{ lesson.pdf_file.name|cut:"lesson_pdfs/" }}
-                    </a>
-                </li>
-                {% endif %}
-                
-                {% for resource in resources %}
-                <li>
-                    <a href="{% if resource.file %}{{ resource.file.url }}{% else %}{{ resource.url }}{% endif %}" target="_blank">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625a3 3 0 00-3 3v12a3 3 0 003 3h12.75a3 3 0 003-3v-5.25" />
-                        </svg>
-                        {{ resource.title }}
-                    </a>
+                    <strong class="module-title">{{ module.title }}</strong>
+                    <ul class="lesson-list">
+                        {% for l in module.lessons.all %}
+                        <li>
+                            <a href="{% url 'core:lesson' l.id %}" 
+                               class="{% if l.id == lesson.id %}active{% endif %}">
+                                {{ l.title }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </li>
                 {% endfor %}
             </ul>
-        </div>
-        {% endif %}
+        </nav>
+    </aside>
 
+    <main class="course-content">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-4);">
+            <h1>{{ lesson.title }}</h1>
+            
+            {% if progress.passed %}
+                <span class="btn btn-success" disabled>Урок пройден</span>
+            {% else %}
+                <form action="{% url 'core:complete_lesson' lesson.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Отметить как пройдено</button>
+                </form>
+            {% endif %}
+        </div>
+        <p class="subtitle" style="margin-top: -10px;">Модуль: {{ lesson.module.title }}</p>
+
+        <div class="lesson-video-card">
+            {% if lesson.video_url %}
+                <div class="video-responsive">
+                    <iframe src="{{ lesson.video_url }}" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                </div>
+            {% elif lesson.video_file %}
+                <video controls style="width: 100%; border-radius: var(--border-radius);">
+                    <source src="{{ lesson.video_file.url }}" type="video/mp4">
+                    Ваш браузер не поддерживает тэг video.
+                </video>
+            {% elif lesson.image_file %}
+                <img src="{{ lesson.image_file.url }}" alt="{{ lesson.title }}" style="width: 100%; border-radius: var(--border-radius);">
+            {% else %}
+                <p>Видео или изображение для этого урока не загружено.</p>
+            {% endif %}
+        </div>
+
+        <div class="tab-buttons" style="margin-top: var(--spacing-6);">
+            <button class="tab-button active" 
+                    hx-get="{% url 'core:lesson_description' lesson.id %}" 
+                    hx-target="#lesson-tab-content"
+                    hx-swap="innerHTML">
+                Описание
+            </button>
+            <button class="tab-button" 
+                    hx-get="{% url 'core:lesson_resources' lesson.id %}" 
+                    hx-target="#lesson-tab-content"
+                    hx-swap="innerHTML">
+                Ресурсы ({{ resources.count }})
+            </button>
+        </div>
+
+        <div id="lesson-tab-content" class="lesson-content-card">
+            {{ lesson.content|linebreaks }}
+        </div>
     </main>
 </div>
-
-<script>
-    function openTab(evt, tabName) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-        tablinks = document.getElementsByClassName("tab-link");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active";
-    }
-    // Открываем первую вкладку по умолчанию
-    document.addEventListener("DOMContentLoaded", function() {
-        document.querySelector('.tab-link').click();
-    });
-</script>
 {% endblock %}
