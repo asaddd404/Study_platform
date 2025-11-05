@@ -8,17 +8,22 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         fields = UserCreationForm.Meta.fields + ('email',)
 
-   # ...
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({'class': 'form-input'})
         self.fields['email'].widget.attrs.update({'class': 'form-input'})
-        self.fields['password1'].widget.attrs.update({'class': 'form-input'}) # <-- ИСПРАВЛЕНО
+        
+        # --- ИСПРАВЛЕНИЕ ЗДЕСЬ (было 'password') ---
+        self.fields['password1'].widget.attrs.update({'class': 'form-input'})
         self.fields['password2'].widget.attrs.update({'class': 'form-input'})
+        
         self.fields['username'].label = "Логин (Имя пользователя)"
         self.fields['email'].label = "Email"
-        self.fields['password1'].label = "Пароль" # <-- ИСПРАВЛЕНО
+        
+        # --- И ИСПРАВЛЕНИЕ ЗДЕСЬ (было 'password') ---
+        self.fields['password1'].label = "Пароль"
         self.fields['password2'].label = "Подтверждение пароля"
+
 class CustomAuthenticationForm(AuthenticationForm):
     username = forms.CharField(
         label='Логин',

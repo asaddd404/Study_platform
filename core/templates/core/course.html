@@ -15,13 +15,13 @@
         <nav class="course-sidebar-nav" x-data="{ activeLesson: null }">
             {% for module in modules %}
             <div x-data="{ open: false }">
-                <!-- ДОБАВЬ ЭТУ КНОПКУ ДЛЯ TOGGLE -->
                 <button class="module-toggle" @click="open = !open">
                     {{ module.title }} 
-                    <span x-text="open ? '-' : '+'"></span>  <!-- + / - для индикации -->
-                </button>
-                <ul class="lesson-list" x-show="open" x-cloak>
-                                        {% for lesson in module.lessons.all %}
+                    <span x-text="open ? '-' : '+'"></span>  </button>
+                
+                <ul class="lesson-list" x-show="open" style="display: none;">
+                    
+                    {% for lesson in module.lessons.all %}
                     <li>
                         <button
                             hx-get="{% url 'core:partial_lesson_detail' lesson.id %}"
@@ -39,6 +39,20 @@
                         </button>
                     </li>
                     {% endfor %}
+
+                    {% if module.tests.all %}
+                        <li class="test-link">
+                            <button
+                                hx-get="{% url 'core:partial_test_module' module.id %}"
+                                hx-target="#lesson-main-content"
+                                hx-swap="innerHTML"
+                                @click="activeLesson = 'test-{{ module.id }}'"
+                                :class="{ 'active': activeLesson === 'test-{{ module.id }}' }"
+                            >
+                                Итоговый тест
+                            </button>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
             {% endfor %}

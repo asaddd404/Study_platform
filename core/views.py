@@ -45,8 +45,7 @@ def register(request):
     else:
         form = CustomUserCreationForm() 
 
-    return render(request, 'register.html', {'form': form})
-
+    return render(request, 'core/register.html', {'form': form})
 
 # --- 4. ОБНОВЛЕННАЯ VIEW ДЛЯ СТРАНИЦЫ КУРСА (для HTMX) ---
 @login_required
@@ -57,28 +56,26 @@ def course(request):
     if not course:
         return render(request, 'core/course.html', {'error': 'Курс не найден'})
         
-    # --- 1. ДОБАВЛЯЕМ 'lessons' СЮДА ---
+    # 1. ДОБАВЛЯЕМ 'lessons' СЮДА
     modules = Module.objects.filter(course=course).order_by('created_at').prefetch_related('tests', 'lessons')
     
-    # --- 2. ЭТОТ ЗАПРОС НУЖЕН ТОЛЬКО ДЛЯ СТАТИСТИКИ ---
+    # 2. Этот запрос нужен только для статистики
     lessons_for_progress = Lesson.objects.filter(module__course=course)
     
     completed_lessons = set()
     progress_percentage = 0
     
     if request.user.is_authenticated:
-        # Используем lessons_for_progress для получения ID пройденных уроков
         progress = Progress.objects.filter(student=request.user, lesson__in=lessons_for_progress)
         completed_lessons = set(progress.filter(passed=True).values_list('lesson_id', flat=True))
         
-        # --- 3. Считаем процент на основе lessons_for_progress
         if lessons_for_progress.count() > 0:
             progress_percentage = (len(completed_lessons) / lessons_for_progress.count() * 100)
         
     context = {
         'course': course,
         'modules': modules,
-        # --- 4. УБИРАЕМ 'lessons' ИЗ КОНТЕКСТА ---
+        # 3. УБИРАЕМ 'lessons' ИЗ КОНТЕКСТА
         'completed_lessons': completed_lessons,
         'progress_percentage': progress_percentage,
     }
