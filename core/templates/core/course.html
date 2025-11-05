@@ -1,69 +1,82 @@
 {% extends 'core/base.html' %}
-{% load static %}
-
-{% block title %}Программа курса{% endblock %}
+{% block title %}Мой курс{% endblock %}
 
 {% block content %}
-<div class="course-layout">
+<div class="course-layout" x-data="{ openModules: {}, active: null }">
+    <!-- ЛЕВАЯ ПАНЕЛЬ -->
     <aside class="course-sidebar">
         <div class="course-sidebar-header">
             <a href="{% url 'core:index' %}" class="logo">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
-                <span>EduPlatform</span>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5c-1.746 0-3.332.477-4.5 1.253m14 0C18.168 5.477 16.582 5 14.835 5c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                EduPlatform
             </a>
         </div>
-        <nav class="course-sidebar-nav" x-data="{ activeLesson: null }">
+
+        <nav class="course-sidebar-nav">
             {% for module in modules %}
             <div x-data="{ open: false }">
-                <button class="module-toggle" @click="open = !open">
-                    {{ module.title }} 
-                    <span x-text="open ? '-' : '+'"></span>  </button>
-                
-                <ul class="lesson-list" x-show="open" style="display: none;">
-                    
-                    {% for lesson in module.lessons.all %}
+                <button 
+                    class="module-toggle"
+                    @click="open = !open"
+                    :class="{ 'open': open }"
+                >
+                    {{ module.title }}
+                    <span x-text="open ? '−' : '+'"></span>
+                </button>
+
+                <ul class="lesson-list" x-show="open" x-collapse>
+                    {% for lesson in module.lesson_list %}
                     <li>
                         <button
                             hx-get="{% url 'core:partial_lesson_detail' lesson.id %}"
-                            hx-target="#lesson-main-content"
+                            hx-target="#main-content"
                             hx-swap="innerHTML"
-                            @click="activeLesson = '{{ lesson.id }}'"
-                            :class="{ 'active': activeLesson === '{{ lesson.id }}' }"
+                            @click="active = '{{ lesson.id }}'"
+                            :class="{ 'active': active === '{{ lesson.id }}' }"
                         >
                             {{ lesson.title }}
                             {% if lesson.id in completed_lessons %}
-                            <svg class="lesson-status-icon completed-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg class="completed-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
                             {% endif %}
                         </button>
                     </li>
                     {% endfor %}
 
-                    {% if module.tests.all %}
-                        <li class="test-link">
-                            <button
-                                hx-get="{% url 'core:partial_test_module' module.id %}"
-                                hx-target="#lesson-main-content"
-                                hx-swap="innerHTML"
-                                @click="activeLesson = 'test-{{ module.id }}'"
-                                :class="{ 'active': activeLesson === 'test-{{ module.id }}' }"
-                            >
-                                Итоговый тест
-                            </button>
-                        </li>
+                    {% if module.test_list %}
+                    <li class="test-link">
+                        <button
+                            hx-get="{% url 'core:partial_test_module' module.id %}"
+                            hx-target="#main-content"
+                            hx-swap="innerHTML"
+                            @click="active = 'test-{{ module.id }}'"
+                            :class="{ 'active': active === 'test-{{ module.id }}' }"
+                        >
+                            Итоговый тест
+                        </button>
+                    </li>
                     {% endif %}
                 </ul>
             </div>
             {% endfor %}
         </nav>
     </aside>
-    
-    <main class="course-content" id="lesson-main-content">
-        <div class="card" style="min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-            <svg style="width: 4rem; height: 4rem; color: var(--color-border); margin-bottom: var(--spacing-4);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 10l-3 3m0 0l-3-3m3 3v6m0-13a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <h2 style="color: var(--color-text);">Добро пожаловать!</h2>
-            <p style="font-size: 1.125rem; color: var(--color-text-muted); margin-bottom: 0;">Выберите модуль и урок из меню слева, чтобы начать обучение.</p>
+
+    <!-- ПРАВАЯ ЧАСТЬ -->
+    <main class="course-content" id="main-content">
+        <div class="welcome-card">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+            </svg>
+            <h2>Готов учиться?</h2>
+            <p>Выбери урок слева — и начнём!</p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ progress_percentage }}%"></div>
+            </div>
+            <p style="margin-top: 1rem; font-weight: 600;">Прогресс: {{ progress_percentage }}%</p>
         </div>
     </main>
 </div>

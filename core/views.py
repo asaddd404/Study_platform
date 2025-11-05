@@ -49,33 +49,33 @@ def register(request):
 
 # --- 4. ОБНОВЛЕННАЯ VIEW ДЛЯ СТРАНИЦЫ КУРСА (для HTMX) ---
 @login_required
-# project/eduplatform/core/views.py
-@login_required
 def course(request):
     course = Course.objects.first()
     if not course:
         return render(request, 'core/course.html', {'error': 'Курс не найден'})
-        
-    # 1. ДОБАВЛЯЕМ 'lessons' СЮДА
-    modules = Module.objects.filter(course=course).order_by('created_at').prefetch_related('tests', 'lessons')
-    
-    # 2. Этот запрос нужен только для статистики
-    lessons_for_progress = Lesson.objects.filter(module__course=course)
-    
+
+    # ЭТО ГЛАВНОЕ — ЯВНО ЗАГРУЖАЕМ УРОКИ
+    modules = list(Module.objects.filter(course=course).order_by('created_at'))
+    for module in modules:
+        module.lesson_list = list(module.lessons.all())  # ЯВНО!
+        module.test_list = list(module.tests.all())
+
+    # Прогресс
     completed_lessons = set()
-    progress_percentage = 0
-    
     if request.user.is_authenticated:
-        progress = Progress.objects.filter(student=request.user, lesson__in=lessons_for_progress)
-        completed_lessons = set(progress.filter(passed=True).values_list('lesson_id', flat=True))
-        
-        if lessons_for_progress.count() > 0:
-            progress_percentage = (len(completed_lessons) / lessons_for_progress.count() * 100)
-        
+        progress = Progress.objects.filter(
+            student=request.user,
+            lesson__module__course=course,
+            passed=True
+        ).values_list('lesson_id', flat=True)
+        completed_lessons = set(progress)
+
+    total_lessons = Lesson.objects.filter(module__course=course).count()
+    progress_percentage = round(len(completed_lessons) / total_lessons * 100) if total_lessons else 0
+
     context = {
         'course': course,
         'modules': modules,
-        # 3. УБИРАЕМ 'lessons' ИЗ КОНТЕКСТА
         'completed_lessons': completed_lessons,
         'progress_percentage': progress_percentage,
     }
