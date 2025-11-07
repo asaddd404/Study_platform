@@ -4,164 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EduPlatform{% endblock %}</title>
+    
     {% load static %}
 
-    <!-- Alpine.js + Collapse (100% работает) -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.14.1/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-
-    <!-- СУПЕР СТИЛЬ -->
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-700: #374151;
-            --gray-900: #111827;
-            --green: #10b981;
-            --purple: #8b5cf6;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
-            min-height: 100vh;
-            color: var(--gray-900);
-        }
-        .course-layout {
-            display: flex;
-            min-height: 100vh;
-        }
-        .course-sidebar {
-            width: 320px;
-            background: white;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.08);
-            z-index: 10;
-        }
-        .course-sidebar-header {
-            padding: 1.5rem 1.5rem 1rem;
-            border-bottom: 1px solid var(--gray-200);
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 1.4rem;
-            color: var(--primary);
-            text-decoration: none;
-        }
-        .logo svg { width: 32px; height: 32px; }
-        .module-toggle {
-            width: 100%;
-            padding: 1rem 1.5rem;
-            background: var(--gray-100);
-            border: none;
-            text-align: left;
-            font-weight: 600;
-            font-size: 1rem;
-            color: var(--gray-900);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-        }
-        .module-toggle:hover { background: var(--gray-200); }
-        .lesson-list {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-top: none;
-        }
-        .lesson-list button {
-            width: 100%;
-            padding: 0.9rem 2rem;
-            background: none;
-            border: none;
-            text-align: left;
-            cursor: pointer;
-            font-size: 0.95rem;
-            color: var(--gray-700);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .lesson-list button:hover {
-            background: #eef2ff;
-            color: var(--primary);
-            padding-left: 2.2rem;
-        }
-        .lesson-list button.active {
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-        }
-        .completed-icon {
-            width: 18px;
-            height: 18px;
-            color: var(--green);
-        }
-        .test-link button {
-            color: var(--purple) !important;
-            font-weight: 600;
-        }
-        .course-content {
-            flex: 1;
-            padding: 3rem;
-            background: white;
-        }
-        .welcome-card {
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
-            padding: 3rem 2rem;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(99,102,241,0.1);
-        }
-        .welcome-card svg {
-            width: 80px;
-            height: 80px;
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-        }
-        .welcome-card h2 {
-            font-size: 2rem;
-            color: var(--gray-900);
-            margin-bottom: 0.5rem;
-        }
-        .welcome-card p {
-            font-size: 1.1rem;
-            color: var(--gray-700);
-        }
-        .progress-bar {
-            height: 8px;
-            background: var(--gray-200);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 2rem;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--purple));
-            width: 0%;
-            transition: width 1.5s ease;
+        .form-group { margin-bottom: var(--spacing-4); }
+        .form-label { display: block; margin-bottom: var(--spacing-2); font-size: 0.875rem; font-weight: 500; color: var(--color-text); }
+        .form-input { display: block; width: 100%; border-radius: var(--border-radius); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); padding: var(--spacing-3) var(--spacing-4); font-size: 1rem; transition: var(--transition); }
+        .form-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); outline: none; }
+        .form-errorlist { color: var(--color-error); font-size: 0.875rem; margin-top: var(--spacing-1); list-style-type: none; padding: 0; }
+        .form-helptext { display: none; }
+        .form-checkbox { /* Стиль для чекбокса "is_free_preview" */
+            width: 1rem; height: 1rem; margin-right: var(--spacing-2);
+            accent-color: var(--color-primary);
         }
     </style>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.14.1/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
 </head>
-<body>
+<body {% if 'course' in request.path %}class="course-page-body"{% endif %}>
+
     {% block content %}{% endblock %}
 
-    <script>
-        document.addEventListener('htmx:afterSwap', () => {
-            const fill = document.querySelector('.progress-fill');
-            if (fill) fill.style.width = '{{ progress_percentage }}%';
-        });
-    </script>
+    {% block extra_js %}{% endblock %}
+
 </body>
 </html>
