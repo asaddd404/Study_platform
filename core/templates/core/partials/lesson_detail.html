@@ -1,71 +1,27 @@
-<main class="course-content">
-    <a href="{% url 'core:course' %}" class="back-link">&larr; Вернуться к программе</a>
-    
+<div class="lesson-content">
     {% if lesson.video_file %}
-        <div class="video-container">
-            <video controls style="width: 100%; border-radius: var(--border-radius-lg);">
-                <source src="{{ lesson.video_file.url }}" type="video/mp4">
-                Ваш браузер не поддерживает тег video.
-            </video>
-        </div>
+        <video controls style="width:100%;border-radius:10px">
+            <source src="{{ lesson.video_file.url }}" type="video/mp4">
+        </video>
     {% elif lesson.video_url %}
-        <div class="video-container">
-            <iframe src="{{ lesson.video_url }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-        </div>
-    {% elif lesson.image_file %}
-        <img src="{{ lesson.image_file.url }}" alt="{{ lesson.title }}" style="width: 100%; border-radius: var(--border-radius-lg);">
-    {% endif %}
-    
-    <h1>{{ lesson.title }}</h1>
-    <p class="lesson-module-name">{{ lesson.module.course.title }} / {{ lesson.module.title }}</p>
-    
-    {% if user.is_authenticated and user.role == 'student' %}
-        <div class="lesson-completion-box">
-            {% if progress.passed %}
-                <div class="status-passed" style="padding: var(--spacing-4); text-align: center;">
-                    <strong>Урок пройден!</strong> ({{ progress.completed_at|date:"d.m.Y" }})
-                </div>
-            {% else %}
-                <form action="{% url 'core:complete_lesson' lesson.id %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary btn-block">
-                        Отметить урок как пройденный
-                    </button>
-                </form>
-            {% endif %}
-        </div>
+        <iframe src="{{ lesson.video_url }}" frameborder="0" allowfullscreen></iframe>
     {% endif %}
 
-    <div class="tabs lesson-tabs" x-data="{ activeTab: 'description' }">
-        <button class="tab-link" :class="{ 'active': activeTab === 'description' }" @click="activeTab = 'description'">Описание</button>
-        {% if lesson.assignment %}
-        <button class="tab-link" :class="{ 'active': activeTab === 'assignment' }" @click="activeTab = 'assignment'">Задание</button>
-        {% endif %}
-        {% if resources or lesson.pdf_file %}
-        <button class="tab-link" :class="{ 'active': activeTab === 'resources' }" @click="activeTab = 'resources'">Материалы</button>
-        {% endif %}
+    <h1>{{ lesson.title }}</h1>
+    <p>{{ lesson.module.course.title }} / {{ lesson.module.title }}</p>
+
+    <div class="lesson-tabs">
+        <button @click="tab='desc'">Описание</button>
+        <button @click="tab='assign'">Задание</button>
     </div>
 
-    <div id="description" class="tab-content lesson-content-block" x-show="activeTab === 'description'">
+    <div x-show="tab==='desc'">
         {{ lesson.content|linebreaks }}
     </div>
-    
+
     {% if lesson.assignment %}
-    <div id="assignment" class="tab-content lesson-content-block" x-show="activeTab === 'assignment'" style="display: none;">
+    <div x-show="tab==='assign'">
         {{ lesson.assignment|linebreaks }}
     </div>
     {% endif %}
-    
-    {% if resources or lesson.pdf_file %}
-    <div id="resources" class="tab-content lesson-content-block" x-show="activeTab === 'resources'" style="display: none;">
-        <ul class="resource-list">
-            {% if lesson.pdf_file %}
-            <li><a href="{{ lesson.pdf_file.url }}" target="_blank">... {{ lesson.pdf_file.name|cut:"lesson_pdfs/" }}</a></li>
-            {% endif %}
-            {% for resource in resources %}
-            <li><a href="{% if resource.file %}{{ resource.file.url }}{% else %}{{ resource.url }}{% endif %}" target="_blank">... {{ resource.title }}</a></li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-</main>
+</div>

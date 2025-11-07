@@ -206,3 +206,33 @@ li { margin-bottom: var(--spacing-2); }
     .course-content { padding: var(--spacing-4); }
     .header .container { padding-left: var(--spacing-4); padding-right: var(--spacing-4); }
 }
+
+
+.lesson-locked-card {
+    background-color: #fff3f3;
+    border: 1px solid #f5c2c2;
+    color: #842029;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 30px auto;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.lesson-locked-card h2 {
+    margin-bottom: 12px;
+    font-size: 1.4rem;
+}
+
+.lesson-locked-card .btn {
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+}
+
+.lesson-locked-card .btn:hover {
+    background-color: #5a6268;
+}

@@ -20,7 +20,7 @@ urlpatterns = [
     path('course/', views.course, name='course'),
     
     # --- СТАРЫЕ ССЫЛКИ (для прямых заходов) ---
-    path('lessons/<uuid:lesson_id>/', views.lesson, name='lesson'),
+    path('lesson/<uuid:lesson_id>/', views.lesson, name='lesson'),
     path('tests/<uuid:module_id>/', views.test_module, name='test_module'),
     
     # --- 1. НОВЫЕ ПУТИ ДЛЯ HTMX (ЧАСТИЧНЫЕ) ---

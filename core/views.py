@@ -48,19 +48,22 @@ def register(request):
     return render(request, 'core/register.html', {'form': form})
 
 # --- 4. ОБНОВЛЕННАЯ VIEW ДЛЯ СТРАНИЦЫ КУРСА (для HTMX) ---
+
 @login_required
 def course(request):
+    # Берём первый курс (или нужный)
     course = Course.objects.first()
     if not course:
         return render(request, 'core/course.html', {'error': 'Курс не найден'})
 
-    # ЭТО ГЛАВНОЕ — ЯВНО ЗАГРУЖАЕМ УРОКИ
+    # Загружаем модули и их уроки/тесты
     modules = list(Module.objects.filter(course=course).order_by('created_at'))
     for module in modules:
-        module.lesson_list = list(module.lessons.all())  # ЯВНО!
+        # Используем именно твои related_name (lessons, tests)
+        module.lesson_list = list(module.lessons.all())
         module.test_list = list(module.tests.all())
 
-    # Прогресс
+    # Вычисляем прогресс
     completed_lessons = set()
     if request.user.is_authenticated:
         progress = Progress.objects.filter(
@@ -79,6 +82,7 @@ def course(request):
         'completed_lessons': completed_lessons,
         'progress_percentage': progress_percentage,
     }
+
     return render(request, 'core/course.html', context)
 
 

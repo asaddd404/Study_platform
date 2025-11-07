@@ -1,0 +1,12 @@
+<div class="lesson-locked-card">
+    <h2>🚫 Доступ закрыт</h2>
+    <p>{{ message }}</p>
+
+    {% if lesson %}
+        <p><strong>{{ lesson.title }}</strong></p>
+    {% endif %}
+
+    <a href="{% url 'core:course' %}" class="btn btn-secondary" style="margin-top: 20px;">
+        ⬅ Вернуться к курсу
+    </a>
+</div>
