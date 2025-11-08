@@ -1,0 +1,219 @@
+<div id="lesson-wrapper" class="lesson-content" x-data="{ tab: 'description' }">
+    <h1>{{ lesson.title }}</h1>
+
+    <!-- Статус урока -->
+    <div class="lesson-status">
+        {% if progress.passed %}
+            <span class="lesson-done">Урок пройден</span>
+        {% else %}
+            <form 
+                hx-post="{% url 'core:complete_lesson' lesson.id %}"
+                hx-target="#lesson-wrapper"
+                hx-swap="outerHTML"
+            >
+                {% csrf_token %}
+                <button type="submit" class="btn-primary">Отметить как пройденное</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- МАЛЕНЬКОЕ ВИДЕО (560×315) -->
+    {% if lesson.video_url %}
+        <div class="video-wrapper">
+            <iframe 
+                src="{{ lesson.video_url|safe }}" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+            </iframe>
+        </div>
+    {% elif lesson.video_file %}
+        <video controls style="max-width:560px; width:100%; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.1);">
+            <source src="{{ lesson.video_file.url }}" type="video/mp4">
+            Ваш браузер не поддерживает видео.
+        </video>
+    {% endif %}
+
+    <!-- ВКЛАДКИ -->
+    <div class="tab-container">
+        <button class="tab-button" 
+                :class="{ 'active': tab === 'description' }" 
+                @click="tab = 'description'">
+            Описание
+        </button>
+        <button class="tab-button" 
+                :class="{ 'active': tab === 'assignment' }" 
+                @click="tab = 'assignment'">
+            Задание
+        </button>
+        <button class="tab-button" 
+                :class="{ 'active': tab === 'materials' }" 
+                @click="tab = 'materials'">
+            Материалы
+        </button>
+    </div>
+
+    <!-- ОПИСАНИЕ -->
+    <div class="tab-content" x-show="tab === 'description'" x-transition>
+        <div style="font-size:1.05rem; line-height:1.75; color:#2d3748;">
+            {{ lesson.content|linebreaksbr }}
+        </div>
+    </div>
+
+    <!-- ЗАДАНИЕ -->
+    <div class="tab-content" x-show="tab === 'assignment'" x-transition>
+        <h3 style="margin:16px 0 12px; color:#1e293b;">Задание к уроку</h3>
+        {% if lesson.assignment %}
+            <div style="background:#f1f5f9; padding:18px 22px; border-radius:10px; border-left:4px solid #2563eb; font-size:1rem; line-height:1.7;">
+                {{ lesson.assignment|linebreaksbr }}
+            </div>
+        {% else %}
+            <p style="color:#64748b; font-style:italic;">Задание не добавлено.</p>
+        {% endif %}
+    </div>
+
+    <!-- МАТЕРИАЛЫ -->
+    <div class="tab-content" x-show="tab === 'materials'" x-transition>
+        <h3 style="margin:16px 0 14px; color:#1e293b;">Дополнительные материалы</h3>
+        {% for resource in lesson.resources.all %}
+            <div style="margin-bottom:10px;">
+                <a href="{% if resource.file %}{{ resource.file.url }}{% else %}{{ resource.url }}{% endif %}" 
+                   target="_blank"
+                   style="color:#2563eb; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                    {{ resource.title }}
+                </a>
+            </div>
+        {% empty %}
+            <p style="color:#94a3b8; font-style:italic;">Материалов пока нет.</p>
+        {% endfor %}
+    </div>
+
+    <!-- ТВОЙ КРУТОЙ СТИЛЬ (немного улучшен) -->
+    <style>
+        :root {
+            --accent: #2563eb;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .lesson-status {
+            margin-bottom: 26px;
+        }
+
+        .lesson-done {
+            background: #ecfdf5;
+            color: #166534;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            border: 1px solid #a7f3d0;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 11px 20px;
+            font-size: 0.96rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.2);
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37,99,235,0.3);
+        }
+
+        /* ВИДЕО — МАЛЕНЬКОЕ И КРАСИВОЕ */
+        .video-wrapper {
+            max-width: 560px;
+            margin: 0 auto 28px;
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            background: #000;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border-radius: 12px;
+        }
+
+        .tab-container {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            margin: 20px 0;
+            gap: 2px;
+            background: var(--bg-light);
+            padding: 4px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .tab-button:hover {
+            color: var(--accent);
+            background: rgba(37,99,235,0.08);
+        }
+
+        .tab-button.active {
+            color: white;
+            background: var(--accent);
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+        }
+
+        .tab-content {
+            padding: 8px 0;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</div>

@@ -1,7 +1,6 @@
 {% extends 'core/base.html' %}
 {% load static %}
-
-{% block content %}
+{% load i18n %} {% block content %}
 <div class="container" style="padding-top: 40px; padding-bottom: 40px; max-width: 900px; margin: auto;">
     <div class="row">
         <div class="col-md-10 offset-md-1">
@@ -32,8 +31,7 @@
                                 </ul>
                                 <p><strong>Правильный ответ:</strong> <code>{{ q.correct_answer }}</code></p>
                             {% else %}
-                                <p><strong>Правильный ответ:</strong> <code>{{ q.correct_answer }}</code></p>
-                            {% endif %}
+                                {% endif %}
                             
                             <p><strong>Балл:</strong> {{ q.max_score }}</p>
                             <div>
@@ -49,30 +47,15 @@
 
             <div class="card card-body">
                 <h3>Добавить новый вопрос</h3>
+                
                 <form method="post" id="add-question-form">
                     {% csrf_token %}
                     
-                    <p>{{ question_form.text.label_tag }} {{ question_form.text }}</p>
-                    <p>{{ question_form.question_type.label_tag }} {{ question_form.question_type }}</p>
-
-                    <div id="choice-fields-container" style="display: none;">
-                        <p>{{ question_form.option_a.label_tag }} {{ question_form.option_a }}</p>
-                        <p>{{ question_form.option_b.label_tag }} {{ question_form.option_b }}</p>
-                        <p>{{ question_form.option_c.label_tag }} {{ question_form.option_c }}</p>
-                        <p>{{ question_form.option_d.label_tag }} {{ question_form.option_d }}</p>
-                    </div>
-
-                    <p>
-                        {{ question_form.correct_answer.label_tag }} {{ question_form.correct_answer }}
-                        <small style="color: #666; font-size: 0.8rem; display: block; margin-top: 5px;" id="correct-answer-help">
-                           (Подсказка...)
-                        </small>
-                    </p>
-                    <p>{{ question_form.max_score.label_tag }} {{ question_form.max_score }}</p>
+                    {{ question_form.as_p }}
                     
                     <button type="submit" name="submit_question_form" class="btn btn-success mt-2">Добавить вопрос</button>
                 </form>
-            </div>
+                </div>
             
             <a href="{% url 'core:profile' %}" class="btn btn-secondary" style="margin-top: 20px;">Назад в профиль</a>
 
@@ -85,22 +68,36 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const questionTypeSelect = document.getElementById('id_question_type_select');
+    // 1. Находим селектор (мы задали ему id='id_question_type' в forms.py)
+    const questionTypeSelect = document.getElementById('id_question_type'); 
     if (!questionTypeSelect) return; 
-    
-    const choiceFieldsContainer = document.getElementById('choice-fields-container');
-    const helpText = document.getElementById('correct-answer-help');
+
+    // 2. Находим <p> теги, которые Django создал вокруг полей
+    // Это самый надежный способ
+    const optionA = document.querySelector('label[for="id_option_a"]').closest('p');
+    const optionB = document.querySelector('label[for="id_option_b"]').closest('p');
+    const optionC = document.querySelector('label[for="id_option_c"]').closest('p');
+    const optionD = document.querySelector('label[for="id_option_d"]').closest('p');
+    const correctAnswer = document.querySelector('label[for="id_correct_answer"]').closest('p');
+
+    // 3. Собираем их в массив
+    const choiceFields = [optionA, optionB, optionC, optionD, correctAnswer];
 
     function toggleFields() {
+        // 'choice' - это значение из <option value="choice">
         if (questionTypeSelect.value === 'choice') {
-            choiceFieldsContainer.style.display = 'block';
-            helpText.textContent = '(Введите букву правильного варианта, например: a, b, c или d)';
-        } else { 
-            choiceFieldsContainer.style.display = 'none';
-            helpText.textContent = '(Введите точный текстовый ответ)';
+            choiceFields.forEach(field => {
+                if(field) field.style.display = 'block';
+            });
+        } else {
+            // 'open_ended' (или любой другой тип)
+            choiceFields.forEach(field => {
+                if(field) field.style.display = 'none';
+            });
         }
     }
     
+    // 4. Вызываем при загрузке и при изменении
     toggleFields();
     questionTypeSelect.addEventListener('change', toggleFields);
 });

@@ -1,91 +1,225 @@
-{% extends 'core/base.html' %}
-{% block title %}Мой курс{% endblock %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" x-data="{ openModule: null }"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ course.title|default:"Мой Курс" }}</title>
+    
+    <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
-{% block content %}
-<div class="course-layout" x-data="{ active: null }">
+    <style>
+        :root {
+            --blue: #007bff;
+            --black: #212529;
+            --grey-light: #f8f9fa;
+            --grey-border: #e0e6ed;
+            --grey-text: #6c757d;
+            --white: #ffffff;
+            --radius: 8px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--grey-light);
+            color: var(--black);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+        }
+        aside {
+            width: 320px;
+            flex-shrink: 0;
+            background: var(--white);
+            border-right: 1px solid var(--grey-border);
+            padding: 24px;
+            overflow-y: auto;
+        }
+        main {
+            flex-grow: 1;
+            background: var(--white);
+            margin: 24px;
+            padding: 32px 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow-y: auto;
+        }
+        aside h2 { font-size: 1.5rem; margin-bottom: 8px; }
+        aside > p { color: var(--grey-text); margin-bottom: 24px; font-size: 0.9rem; }
 
-    <!-- ЛЕВАЯ ПАНЕЛЬ -->
-    <aside class="course-sidebar">
-        <div class="course-sidebar-header">
-            <a href="{% url 'core:index' %}" class="logo">EduPlatform</a>
-        </div>
+        .module-header {
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 14px 16px;
+            background: var(--white);
+            border: 1px solid var(--grey-border);
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        .module-header:hover { background: #fcfdff; border-color: #c4dfff; }
 
-        <nav class="course-sidebar-nav">
+        .lesson-list {
+            list-style: none;
+            padding: 4px 0 4px 12px;
+            margin: 0;
+            overflow: hidden;
+        }
+        .lesson-list li a {
+            display: block;
+            padding: 12px 10px;
+            text-decoration: none;
+            color: var(--blue);
+            border-bottom: 1px solid #f0f2f5;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
+            font-size: 0.95rem;
+        }
+        .lesson-list li a:hover { background: #f8faff; }
+        .lesson-list li.test-item a {
+            color: var(--black);
+            font-weight: 600;
+            background: #fcfcfc;
+        }
+        .lesson-list li.test-item a:hover { background: #f9f9f9; }
+
+        main h1 { font-size: 2rem; margin-bottom: 16px; font-weight: 700; }
+        main h2 { font-size: 1.6rem; margin-bottom: 12px; font-weight: 600; }
+        main h3 { font-size: 1.25rem; margin-bottom: 12px; font-weight: 600; }
+        main p { line-height: 1.6; margin-bottom: 1rem; font-size: 1rem; }
+        main a { color: var(--blue); }
+        main hr { border: 0; border-top: 1px solid var(--grey-border); margin: 24px 0; }
+
+        #loading {
+            display: none; 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: var(--black); 
+            color: white; 
+            padding: 8px 14px; 
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        /* ⬇️ ⬇️ ⬇️ Я ДОБАВИЛ ЭТИ СТИЛИ ДЛЯ КНОПКИ ⬇️ ⬇️ ⬇️
+        */
+        .btn {
+            display: inline-block;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: 10px 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            border-radius: var(--radius);
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+            width: 100%; /* Делаем во всю ширину */
+            margin-bottom: 24px; /* Отступ снизу */
+        }
+        
+        .btn-secondary {
+            color: var(--black);
+            background-color: var(--grey-light);
+            border-color: var(--grey-border);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f1f5f9; /* Чуть темнее */
+            border-color: #d1d9e4;
+        }
+        /* ⬆️ ⬆️ ⬆️ КОНЕЦ СТИЛЕЙ ДЛЯ КНОПКИ ⬆️ ⬆️ ⬆️
+        */
+    </style>
+</head>
+<body>
+
+    <aside>
+        <a href="javascript:history.back()" class="btn btn-secondary">Назад</a>
+
+        <h2>{{ course.title }}</h2>
+        <p>Навигация по курсу</p>
+
+        {% if modules %}
+        
             {% for module in modules %}
-            <div x-data="{ open: false }" class="module-block">
-                <button class="module-toggle" @click="open = !open">
-                    {{ module.title }}
-                    <span x-text="open ? '−' : '+'"></span>
-                </button>
+                <div x-data="{ open: false }"> 
+                    
+                    <div class="module-header" @click="open = !open">
+                        <span>{{ module.title }}</span>
+                        <span x-text="open ? '−' : '+'" style="color: var(--grey-text);"></span>
+                    </div>
 
-                <ul class="lesson-list" x-show="open" x-collapse>
-                    {% for lesson in module.lesson_list %}
-                    <li>
-                        <a
-    @click.stop
-    hx-get="{% url 'core:partial_lesson_detail' lesson.id %}"
-    hx-target="#main-content"
-    hx-swap="innerHTML"
-    hx-indicator="#loading-indicator"
-    href="javascript:void(0)"
-    class="lesson-link {% if lesson.id in completed_lessons %}completed{% endif %}"
->
+                    <ul class="lesson-list" x-show="open" x-transition>
+                        {% for lesson in module.lessons.all %}
+                            <li>
+                                <a href="#"
+                                   hx-get="{% url 'core:new_lesson_detail' lesson.id %}"  
+                                   hx-target="#course-content-area"
+                                   hx-swap="innerHTML">
+                                    {{ lesson.title }}
+                                </a>
+                            </li>
+                        {% empty %}
+                            <li style="padding: 10px 8px; color: var(--grey-text);">(Нет уроков)</li>
+                        {% endfor %}
+                    </ul>
 
-                    </li>
-                    {% endfor %}
-
-                    {% if module.test_list %}
-                    <li class="test-link">
-                        <a
-    @click.stop
-    hx-get="{% url 'core:partial_test_module' module.id %}"
-    hx-target="#main-content"
-    hx-swap="innerHTML"
-    hx-indicator="#loading-indicator"
-    href="javascript:void(0)"
-    class="lesson-link"
->
-
-                    </li>
+                    {% if module.tests.all %}
+                    <ul class="lesson-list" x-show="open" x-transition>
+                        <li class="test-item">
+                            <a href="#"
+                               hx-get="{% url 'core:new_test_detail' module.id %}"
+                               hx-target="#course-content-area"
+                               hx-swap="innerHTML">
+                                 {{ module.tests.first.title }}
+                            </a>
+                        </li>
+                    </ul>
                     {% endif %}
-                </ul>
-            </div>
+                </div> 
             {% endfor %}
-        </nav>
+        {% else %}
+            <p style="color: var(--grey-text);">В этом курсе пока нет модулей.</p>
+        {% endif %}
     </aside>
 
-    <!-- ПРАВАЯ ПАНЕЛЬ -->
-    <main class="course-content" id="main-content">
-        <div class="welcome-card">
-            <h2>Готов учиться?</h2>
-            <p>Выбери урок слева, чтобы начать!</p>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: {{ progress_percentage }}%"></div>
-            </div>
-            <p>Прогресс: {{ progress_percentage }}%</p>
-        </div>
+    <main id="course-content-area">
+        <h1>Добро пожаловать!</h1>
+        <p>Выберите урок или тест из меню слева, чтобы начать.</p>
     </main>
-</div>
 
-<!-- Индикатор загрузки HTMX -->
-<div id="loading-indicator"
-     style="display:none; position:fixed; top:20px; right:20px; padding:8px 14px;
-            background:#333; color:white; border-radius:6px; z-index:9999;">
-  Загрузка...
-</div>
+    <div id="loading">Загрузка...</div>
+    
+    <script>
+        // Показываем индикатор загрузки
+        document.body.addEventListener('htmx:beforeRequest', () => {
+            document.getElementById('loading').style.display = 'block';
+        });
+        document.body.addEventListener('htmx:afterRequest', () => {
+            document.getElementById('loading').style.display = 'none';
+        });
 
-<script>
-document.body.addEventListener('htmx:send', function() {
-    document.getElementById('loading-indicator').style.display = 'block';
-});
-document.body.addEventListener('htmx:afterSwap', function() {
-    document.getElementById('loading-indicator').style.display = 'none';
-});
-document.body.addEventListener('htmx:responseError', function(e) {
-    document.getElementById('loading-indicator').style.display = 'none';
-    document.getElementById('main-content').innerHTML =
-      '<div class="error-card" style="padding:30px;text-align:center;color:red;">Ошибка загрузки: ' +
-      e.detail.xhr.status + '</div>';
-});
-</script>
-{% endblock %}
+        // ГЛАВНАЯ ФИШКА: оживляем Alpine после HTMX
+        document.body.addEventListener('htmx:afterSwap', (evt) => {
+            if (evt.detail.target.id === 'course-content-area') {
+                Alpine.initTree(evt.detail.target);
+            }
+        });
+    </script>
+</body>
+</html>

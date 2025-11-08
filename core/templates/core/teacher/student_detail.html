@@ -1,55 +1,40 @@
 {% extends 'core/base.html' %}
-{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Прогресс ученика" %}: {{ student.username }}{% endblock %}
 
 {% block content %}
-<div class="container" style="padding-top: 40px; padding-bottom: 40px; max-width: 900px; margin: auto;">
-    <h2>Профиль студента: {{ student.username }}</h2>
-    <p>Email: {{ student.email }}</p>
+<div class="container mt-5">
+    <h2>{{ student.username }}</h2>
+    <p>{{ student.email }}</p>
+
     <hr>
-    <h3>Прогресс по вашим курсам:</h3>
 
-    <h4 class="mt-4" style="margin-top: 20px;">Прогресс по урокам:</h4>
-    {% if progress %}
-        <ul class="list-group" style="list-style: none; padding: 0;">
-            {% for p in progress %}
-            <li class="list-group-item" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; border-radius: 4px;">
-                <strong>{{ p.lesson.title }}</strong>
-                <span style="float: right;">
-                {% if p.passed %}
-                    <span style="color: green;">Завершено</span>
-                {% else %}
-                    <span style="color: orange;">В процессе</span>
-                {% endif %}
-                </span>
-                <br>
-                <small style="color: #777;">Курс: {{ p.lesson.module.course.title }} / Модуль: {{ p.lesson.module.title }}</small>
-            </li>
+    <h3 class="mt-5">{% trans "Попытки прохождения тестов" %}</h3>
+    <div class="card">
+        <ul class="list-group list-group-flush">
+            {% for submission in submissions %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ submission.test.title }}</strong>
+                        <br>
+                        <small class="text-muted">{{ submission.submitted_at|date:"d.m.Y H:i" }}</small>
+                    </div>
+                    
+                    {% if submission.status == 'graded' %}
+                        <span class="badge {% if submission.passed %}badge-success{% else %}badge-danger{% endif %} p-2">
+                            {% trans "Балл" %}: {{ submission.score|floatformat:0 }}%
+                        </span>
+                    {% elif submission.status == 'pending' %}
+                        <a href="{% url 'core:teacher_grade_submission' submission.id %}" class="btn btn-warning">
+                            {% trans "Проверить" %}
+                        </a>
+                    {% endif %}
+                </li>
+            {% empty %}
+                <li class="list-group-item">{% trans "Ученик еще не проходил тесты." %}</li>
             {% endfor %}
         </ul>
-    {% else %}
-        <p>У студента нет прогресса по вашим урокам.</p>
-    {% endif %}
-
-    <h4 class="mt-4" style="margin-top: 20px;">Результаты тестов:</h4>
-    {% if submissions %}
-        <ul class="list-group" style="list-style: none; padding: 0;">
-            {% for sub in submissions %}
-            <li class="list-group-item" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; border-radius: 4px;">
-                <strong>{{ sub.test.title }}</strong> (Модуль: {{ sub.test.module.title }})
-                <br>
-                Результат: <strong>{{ sub.score }}%</strong>
-                <span style="float: right; {% if sub.passed %}color: green;{% else %}color: red;{% endif %}">
-                    {% if sub.passed %}Сдано{% else %}Не сдано{% endif %}
-                </span>
-                <br>
-                <small style="color: #777;">Дата: {{ sub.submitted_at }}</small>
-            </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Студент еще не проходил тесты по вашим курсам.</p>
-    {% endif %}
-
-    <a href="{% url 'core:profile' %}" class="btn btn-secondary" style="margin-top: 20px;">Назад</a>
+    </div>
 </div>
 {% endblock %}

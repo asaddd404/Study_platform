@@ -1,0 +1,179 @@
+<div class="test-wrapper">
+    <h1>{{ test.title }}</h1>
+    <p class="test-desc">{{ test.description }}</p>
+
+    <form 
+        hx-post="{% url 'core:new_test_submit' test.id %}"
+        hx-target="#course-content-area"
+        hx-swap="innerHTML"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="module_id" value="{{ module.id }}">
+
+        {% for question in test.questions.all %}
+            <div class="question-card">
+                <p class="question-text">{{ forloop.counter }}. {{ question.text }}</p>
+                <p class="question-score">({{ question.max_score }} балл(ов))</p>
+
+                {% if question.question_type == 'choice' %}
+                    <div class="options">
+                        {% if question.option_a %}
+                        <label class="option">
+                            <input type="radio" name="answer_{{ question.id }}" value="a"> {{ question.option_a }}
+                        </label>
+                        {% endif %}
+                        {% if question.option_b %}
+                        <label class="option">
+                            <input type="radio" name="answer_{{ question.id }}" value="b"> {{ question.option_b }}
+                        </label>
+                        {% endif %}
+                        {% if question.option_c %}
+                        <label class="option">
+                            <input type="radio" name="answer_{{ question.id }}" value="c"> {{ question.option_c }}
+                        </label>
+                        {% endif %}
+                        {% if question.option_d %}
+                        <label class="option">
+                            <input type="radio" name="answer_{{ question.id }}" value="d"> {{ question.option_d }}
+                        </label>
+                        {% endif %}
+                    </div>
+                
+                {% elif question.question_type == 'open_ended' %}
+                    <textarea name="answer_{{ question.id }}" 
+                              class="input-answer" 
+                              rows="5"
+                              placeholder="Введите ваш развернутый ответ..."></textarea>
+                    {% else %}
+                    <input type="text" 
+                           name="answer_{{ question.id }}" 
+                           class="input-answer" 
+                           placeholder="Введите ваш ответ...">
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>В этом тесте пока нет вопросов.</p>
+        {% endfor %}
+
+        <button type="submit" class="btn-submit">Завершить тест</button>
+    </form>
+</div>
+
+<style>
+    :root {
+        --accent: #2563eb;
+        --text: #1e293b;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --bg-light: #f8fafc;
+        --radius: 10px;
+    }
+
+    .test-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        color: var(--text);
+    }
+
+    .test-wrapper h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .test-desc {
+        color: var(--text-muted);
+        margin-bottom: 30px;
+        font-size: 1rem;
+    }
+
+    .question-card {
+        background: var(--bg-light);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease;
+    }
+
+    .question-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .question-text {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 4px;
+    }
+    
+    .question-score {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+
+    .options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: background 0.2s ease;
+        cursor: pointer;
+    }
+
+    .option:hover {
+        background: #f1f5f9;
+    }
+
+    input[type="radio"] {
+        accent-color: var(--accent);
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Этот стиль теперь применится и к <input> и к <textarea> 
+    */
+    .input-answer {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit; /* Важно, чтобы шрифт был как у сайта */
+        transition: border 0.2s ease;
+        box-sizing: border-box; /* Важно для <textarea> */
+        resize: vertical; /* Разрешаем менять размер по-вертикали */
+    }
+
+    .input-answer:focus {
+        border-color: var(--accent);
+        outline: none;
+    }
+
+    .btn-submit {
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+    }
+
+    .btn-submit:hover {
+        background: #1d4ed8;
+    }
+</style>

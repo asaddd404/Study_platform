@@ -1,3 +1,5 @@
+# eduplatform/core/views.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test 
 from django.contrib.auth import logout, login
@@ -13,17 +15,23 @@ from .models import (
     TestAnswer, Progress, User, TestQuestion
 )
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseRedirect
-from django.db.models import Q 
+from django.db.models import Q, Sum  # <-- Убедись, что Sum импортирован
 from django.urls import reverse
 
-# (Эти 3 views без изменений)
-def lesson_list_api(request):
-    module_id = request.GET.get('module_id')
-    if module_id:
-        lessons = Lesson.objects.filter(module_id=module_id).order_by('created_at')
-        lesson_data = [{'id': lesson.id, 'title': lesson.title, 'video_url': lesson.video_url, 'content': lesson.content} for lesson in lessons]
-        return JsonResponse({'lessons': lesson_data})
-    return JsonResponse({'error': 'Module ID is required'}, status=400)
+# ===================================================================
+#  ИСПРАВЛЕНИЕ: Перемещаем декоратор сюда, в начало файла
+# ===================================================================
+def teacher_required(function):
+    def wrap(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.role == 'teacher':
+            return function(request, *args, **kwargs)
+        else:
+            return HttpResponseForbidden("У вас нет доступа к этой странице.")
+    wrap.__doc__ = function.__doc__
+    wrap.__name__ = function.__name__
+    return wrap
+# ===================================================================
+
 
 def index(request):
     course = Course.objects.first()
@@ -47,69 +55,27 @@ def register(request):
 
     return render(request, 'core/register.html', {'form': form})
 
-# --- 4. ОБНОВЛЕННАЯ VIEW ДЛЯ СТРАНИЦЫ КУРСА (для HTMX) ---
-
-@login_required
+# --- 4. VIEW СТРАНИЦЫ КУРСА ---
+@login_required # <-- Добавим проверку, что пользователь вошел
 def course(request):
-    # Берём первый курс (или нужный)
+    
+    # 1. Получаем первый курс (для простоты)
     course = Course.objects.first()
+    
     if not course:
+        # Если курсов нет, можно показать ошибку, но пока просто отдадим пустой шаблон
         return render(request, 'core/course.html', {'error': 'Курс не найден'})
 
-    # Загружаем модули и их уроки/тесты
-    modules = list(Module.objects.filter(course=course).order_by('created_at'))
-    for module in modules:
-        # Используем именно твои related_name (lessons, tests)
-        module.lesson_list = list(module.lessons.all())
-        module.test_list = list(module.tests.all())
+    # 2. Получаем все модули этого курса, и сразу "захватываем" связанные с ними уроки
+    modules = Module.objects.filter(course=course).prefetch_related('lessons').order_by('created_at')
 
-    # Вычисляем прогресс
-    completed_lessons = set()
-    if request.user.is_authenticated:
-        progress = Progress.objects.filter(
-            student=request.user,
-            lesson__module__course=course,
-            passed=True
-        ).values_list('lesson_id', flat=True)
-        completed_lessons = set(progress)
-
-    total_lessons = Lesson.objects.filter(module__course=course).count()
-    progress_percentage = round(len(completed_lessons) / total_lessons * 100) if total_lessons else 0
-
+    # 3. Передаем курс и модули (с уроками внутри) в наш шаблон
     context = {
         'course': course,
-        'modules': modules,
-        'completed_lessons': completed_lessons,
-        'progress_percentage': progress_percentage,
+        'modules': modules
     }
-
-    return render(request, 'core/course.html', context)
-
-
-
-
-# --- 5. СТАРЫЙ VIEW УРОКА (ДЛЯ ПРЯМЫХ ССЫЛОК, НЕ HTMX) ---
-@login_required
-def lesson(request, lesson_id):
-    lesson = get_object_or_404(Lesson.objects.select_related('module__course'), id=lesson_id)
-    course = lesson.module.course
-    lessons = Lesson.objects.filter(module__course=course).order_by('module__created_at', 'created_at')
-    current_index = list(lessons).index(lesson)
     
-    if current_index > 0:
-        prev_lesson = lessons[current_index - 1]
-        if not Progress.objects.filter(student=request.user, lesson=prev_lesson, passed=True).exists() and not lesson.is_free_preview:
-            return render(request, 'core/locked.html', {'lesson': lesson, 'message': 'Пройдите предыдущее занятие.'})
-            
-    progress, created = Progress.objects.get_or_create(student=request.user, lesson=lesson)
-        
-    # Рендерим ПОЛНУЮ страницу урока
-    return render(request, 'core/lesson.html', {
-        'lesson': lesson, 
-        'assignment': lesson.assignment,
-        'progress': progress,
-        'resources': lesson.resources.all()
-    })
+    return render(request, 'core/course.html', context)
 
 
 # --- 6. VIEW ДЛЯ КНОПКИ "ПРОЙТИ УРОК" (БЕЗ ИЗМЕНЕНИЙ) ---
@@ -117,133 +83,113 @@ def lesson(request, lesson_id):
 def complete_lesson(request, lesson_id):
     if request.method == 'POST':
         lesson = get_object_or_404(Lesson, id=lesson_id)
-        progress, created = Progress.objects.get_or_create(student=request.user, lesson=lesson)
+        progress, created = Progress.objects.get_or_create(
+            student=request.user, 
+            lesson=lesson
+        )
         
         if not progress.passed:
             progress.passed = True
-            progress.completed_at = timezone.now()
+            progress.completed_at = timezone.now() # Убедись, что 'timezone' импортирован
             progress.save()
-            
-    # HTMX: После POST-запроса, возвращаем обновленный *фрагмент* урока
-    # (Это предполагает, что вы обернете кнопку "пройти" в hx-post)
-    # Но для простоты пока оставим редирект на *полную* страницу урока
-    return redirect('core:lesson', lesson_id=lesson_id)
-
-
-# (Эти 2 views не используются в HTMX-версии, но оставляем их)
-@login_required
-def lesson_description(request, lesson_id):
-    lesson = get_object_or_404(Lesson, id=lesson_id)
-    return render(request, 'core/partials/lesson_description.html', {'lesson': lesson})
-@login_required
-def lesson_resources(request, lesson_id):
-    lesson = get_object_or_404(Lesson, id=lesson_id)
-    resources = lesson.resources.all()
-    return render(request, 'core/lesson_resources.html', {'lesson': lesson, 'resources': resources})
-
-
-# --- 7. СТАРЫЙ VIEW ТЕСТА (ДЛЯ ПРЯМЫХ ССЫЛОК, НЕ HTMX) ---
-@login_required
-def test_module(request, module_id):
-    module = get_object_or_404(Module, id=module_id)
-    try:
-        test = Test.objects.get(module=module)
-    except Test.DoesNotExist:
-        return render(request, 'core/locked.html', {'lesson': None, 'message': 'Тест для этого модуля еще не создан.'})
-        
-    lessons = Lesson.objects.filter(module=module)
     
-    if not all(Progress.objects.filter(student=request.user, lesson=lesson, passed=True).exists() for lesson in lessons):
-        return render(request, 'core/locked.html', {'lesson': None, 'message': 'Пройдите все уроки модуля перед тестированием.'})
-        
-    if request.method == 'POST':
-        submission = TestSubmission(test=test, student=request.user)
-        submission.save()
-        for question in test.questions.all():
-            answer_text = request.POST.get(f'answer_{question.id}', '')
-            TestAnswer(submission=submission, question=question, answer_text=answer_text).save()
-        submission.calculate_score()
-        # (Это рендерит ПОЛНУЮ страницу с результатом)
-        return render(request, 'core/partials/test_result.html', {'submission': submission, 'test': test})
-        
-    # Рендерим ПОЛНУЮ страницу теста
-    return render(request, 'core/test_module.html', {'test': test, 'module': module})
-
-
-# --- 8. НОВАЯ VIEW ДЛЯ HTMX (ЧАСТИЧНЫЙ УРОК) ---
-@login_required
-def partial_lesson_detail(request, lesson_id):
-    lesson = get_object_or_404(Lesson.objects.select_related('module__course'), id=lesson_id)
-    course = lesson.module.course
-    lessons = Lesson.objects.filter(module__course=course).order_by('module__created_at', 'created_at')
-    current_index = list(lessons).index(lesson)
-    
-    # Проверка на прохождение предыдущего урока
-    if current_index > 0:
-        prev_lesson = lessons[current_index - 1]
-        if not Progress.objects.filter(student=request.user, lesson=prev_lesson, passed=True).exists() and not lesson.is_free_preview:
-            # Отдаем частичный шаблон "заблокировано"
-            return render(request, 'core/partials/lesson_locked.html', {
-                'lesson': lesson, 
-                'message': 'Пройдите предыдущее занятие.'
-            })
-            
-    progress, created = Progress.objects.get_or_create(student=request.user, lesson=lesson)
-        
-    # Рендерим НОВЫЙ ЧАСТИЧНЫЙ ШАБЛОН (без base.html)
-    return render(request, 'core/partials/lesson_detail.html', {
-        'lesson': lesson, 
-        'assignment': lesson.assignment,
-        'progress': progress,
-        'resources': lesson.resources.all()
+    return render(request, 'core/partials/_lesson_content.html', {
+        'lesson': lesson,
+        'progress': progress
     })
 
-# --- 9. НОВАЯ VIEW ДЛЯ HTMX (ЧАСТИЧНЫЙ ТЕСТ) ---
+
 @login_required
-def partial_test_module(request, module_id):
+def new_lesson_detail(request, lesson_id):
+    lesson = get_object_or_404(
+        Lesson.objects.prefetch_related('resources'),
+        id=lesson_id
+    )
+
+    progress, created = Progress.objects.get_or_create(
+        student=request.user,
+        lesson=lesson
+    )
+
+    return render(request, 'core/partials/_lesson_content.html', {
+        'lesson': lesson,
+        'progress': progress
+    })
+
+
+@login_required
+def new_test_detail(request, module_id):
     module = get_object_or_404(Module, id=module_id)
     
-    # (Логика POST-запроса)
-    if request.method == 'POST':
-        test = get_object_or_404(Test, module=module)
-        submission = TestSubmission(test=test, student=request.user)
-        submission.save()
-        for question in test.questions.all():
-            answer_text = request.POST.get(f'answer_{question.id}', '')
-            TestAnswer(submission=submission, question=question, answer_text=answer_text).save()
-        submission.calculate_score()
-        
-        # Рендерим ЧАСТИЧНЫЙ РЕЗУЛЬТАТ (без base.html)
-        return render(request, 'core/partials/test_result_detail.html', {
-            'submission': submission, 
-            'test': test
+    # 1. Пытаемся найти тест
+    try:
+        test = Test.objects.prefetch_related('questions').get(module=module)
+    except Test.DoesNotExist:
+        # Если теста нет, отдаем шаблон-заглушку
+        return render(request, 'core/partials/_content_locked.html', {
+            'message': 'Тест для этого модуля еще не создан.'
         })
 
-    # (Логика GET-запроса)
-    try:
-        test = Test.objects.get(module=module)
-    except Test.DoesNotExist:
-        return render(request, 'core/partials/lesson_locked.html', {'lesson': None, 'message': 'Тест для этого модуля еще не создан.'})
-        
+    # 2. Проверяем, пройдены ли все уроки в этом модуле
     lessons = Lesson.objects.filter(module=module)
-    if not all(Progress.objects.filter(student=request.user, lesson=lesson, passed=True).exists() for lesson in lessons):
-        return render(request, 'core/partials/lesson_locked.html', {'lesson': None, 'message': 'Пройдите все уроки модуля перед тестированием.'})
+    all_lessons_passed = all(
+        Progress.objects.filter(student=request.user, lesson=lesson, passed=True).exists() 
+        for lesson in lessons
+    )
+    
+    if not all_lessons_passed:
+        # Если уроки не пройдены, отдаем шаблон-заглушку
+        return render(request, 'core/partials/_content_locked.html', {
+            'message': 'Пройдите все уроки в этом модуле, прежде чем начать тест.'
+        })
+
+    # 3. Если все проверки пройдены, отдаем partial-шаблон с тестом
+    return render(request, 'core/partials/_test_content.html', {
+        'test': test,
+        'module': module
+    })
+
+
+# --- ИЗМЕНЕННАЯ VIEW ДЛЯ ОТПРАВКИ ТЕСТА ---
+@login_required
+def new_test_submit(request, test_id):
+    
+    # Мы принимаем только POST-запросы
+    if request.method != 'POST':
+        return HttpResponse("Что-то пошло не так (нужен POST)", status=400)
+
+    test = get_object_or_404(Test.objects.prefetch_related('questions'), id=test_id)
+    student = request.user
+
+    # 1. Создаем "Попытку прохождения" (Submission)
+    submission = TestSubmission.objects.create(test=test, student=student)
+
+    # 2. Собираем все вопросы этого теста
+    all_questions = test.questions.all()
+
+    # 3. Пробегаемся по вопросам и сохраняем ответы студента
+    for question in all_questions:
+        answer_text = request.POST.get(f'answer_{question.id}', '')
         
-    # Рендерим НОВЫЙ ЧАСТИЧНЫЙ ШАБЛОН ТЕСТА (без base.html)
-    return render(request, 'core/partials/test_module_detail.html', {'test': test, 'module': module})
+        TestAnswer.objects.create(
+            submission=submission,
+            question=question,
+            answer_text=answer_text
+        )
+
+    # 4. ВАЖНО: Вызываем твой метод из models.py, который проверит 'choice'
+    #
+    submission.auto_grade() 
+
+    # 5. Отдаем HTMX-фрагмент с результатами
+    # (шаблон _test_result_content.html сам решит, что показать: балл или "На проверке")
+    return render(request, 'core/partials/_test_result_content.html', {
+        'submission': submission,
+        'test': test
+    })
 
 
 # --- (ОСТАЛЬНОЙ КОД БЕЗ ИЗМЕНЕНИЙ) ---
-
-def teacher_required(function):
-    def wrap(request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.role == 'teacher':
-            return function(request, *args, **kwargs)
-        else:
-            return HttpResponseForbidden("У вас нет доступа к этой странице.")
-    wrap.__doc__ = function.__doc__
-    wrap.__name__ = function.__name__
-    return wrap
 
 @login_required
 def profile(request):
@@ -515,3 +461,59 @@ def teacher_remove_student(request, student_id):
 def custom_logout(request):
     logout(request)
     return render(request, 'core/logged_out.html')
+
+
+# --- НОВАЯ VIEW ДЛЯ РУЧНОЙ ПРОВЕРКИ ---
+@login_required
+@teacher_required
+def teacher_grade_submission(request, submission_id):
+    # 1. Получаем попытку и связанные с ней ответы и вопросы
+    submission = get_object_or_404(
+        TestSubmission.objects.prefetch_related(
+            'answers', 'answers__question'
+        ), 
+        id=submission_id
+    )
+    
+    # 2. Убедимся, что учитель имеет право проверять этот тест
+    if request.user not in submission.test.module.teachers.all():
+         return HttpResponseForbidden("Вы не можете проверять эту работу.")
+
+    if request.method == 'POST':
+        # 3. Обрабатываем POST-запрос (сохраняем оценки)
+        
+        # Проходимся по всем ответам в этой попытке
+        for answer in submission.answers.all():
+            # Нас интересуют только "open_ended", т.к. 'choice' уже оценены
+            if answer.question.question_type == 'open_ended':
+                
+                # Получаем балл из формы
+                score_str = request.POST.get(f'score_{answer.id}')
+                
+                try:
+                    score = int(score_str)
+                    max_score = answer.question.max_score
+                    
+                    # Ставим балл, но не больше максимального
+                    answer.score = max(0, min(score, max_score)) 
+                    
+                except (ValueError, TypeError):
+                    answer.score = 0 # Если пришло что-то не то, ставим 0
+                
+                answer.save() # Сохраняем балл за этот ответ
+        
+        # 4. ВАЖНО: Вызываем твой метод из models.py
+        # Он посчитает ИТОГОВЫЙ % (сложив авто-баллы и ручные) 
+        # и поменяет статус на 'graded'
+        submission.update_final_score()
+        
+        # 5. Возвращаем учителя на страницу ученика
+        return redirect('core:teacher_student_detail', student_id=submission.student.id)
+
+    # 6. Обрабатываем GET-запрос (показываем форму)
+    context = {
+        'submission': submission,
+        'answers': submission.answers.all().order_by('question__created_at')
+    }
+    # Используем новый шаблон, который создали
+    return render(request, 'core/teacher/grade_submission.html', context)

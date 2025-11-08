@@ -1,0 +1,31 @@
+{% load i18n %}
+
+<div class="lesson-content">
+
+    {% if submission.status == 'graded' %}
+        <h3>{% trans "Результаты теста" %}: {{ test.title }}</h3>
+        
+        <div class="alert 
+            {% if submission.passed %}alert-success{% else %}alert-danger{% endif %}" 
+            role="alert">
+            <h4 class="alert-heading">
+                {% trans "Ваш балл" %}: {{ submission.score|floatformat:0 }}%
+            </h4>
+            
+            {% if submission.passed %}
+                <p>{% trans "Поздравляем! Тест успешно пройден." %}</p>
+            {% else %}
+                <p>{% trans "Тест не пройден." %} {% trans "Проходной балл" %}: {{ test.passing_score }}%.</p>
+            {% endif %}
+        </div>
+
+    {% elif submission.status == 'pending' %}
+        <h3>{% trans "Тест отправлен на проверку" %}</h3>
+        <div class="alert alert-info" role="alert">
+            <p>{% trans "Этот тест содержит вопросы с развернутым ответом." %}</p>
+            <p>{% trans "Ваши ответы были отправлены учителю на проверку. Как только тест будет проверен, результат появится в вашем профиле." %}</p>
+        </div>
+    {% endif %}
+    
+    <p><a href="{% url 'core:course' %}">{% trans "Вернуться к курсу" %}</a></p>
+</div>

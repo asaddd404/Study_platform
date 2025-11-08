@@ -4,45 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EduPlatform{% endblock %}</title>
-
     {% load static %}
-
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="icon" href="{% static 'img/favicon.ico' %}">
-
-    <style>
-        .form-group { margin-bottom: var(--spacing-4); }
-        .form-label { display: block; margin-bottom: var(--spacing-2); font-size: 0.875rem; font-weight: 500; color: var(--color-text); }
-        .form-input { display: block; width: 100%; border-radius: var(--border-radius); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); padding: var(--spacing-3) var(--spacing-4); font-size: 1rem; transition: var(--transition); }
-        .form-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); outline: none; }
-        .form-errorlist { color: var(--color-error); font-size: 0.875rem; margin-top: var(--spacing-1); list-style-type: none; padding: 0; }
-        .form-helptext { display: none; }
-        .form-checkbox {
-            width: 1rem; height: 1rem; margin-right: var(--spacing-2);
-            accent-color: var(--color-primary);
-        }
-    </style>
-
-    <!-- ✅ Подключаем Collapse ПЕРЕД Alpine -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.14.1/dist/cdn.min.js"></script>
-
-    <!-- ✅ Подключаем сам Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-
-    <!-- ✅ Подключаем HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
 </head>
-
-<body {% if 'course' in request.path %}class="course-page-body"{% endif %}>
+<body>
     {% block content %}{% endblock %}
-    {% block extra_js %}{% endblock %}
-    <button 
-  hx-get="https://httpbin.org/html" 
-  hx-target="#main-content" 
-  hx-swap="innerHTML"
->
-  Проверка HTMX
-</button>
 
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

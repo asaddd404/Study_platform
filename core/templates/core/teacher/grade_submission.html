@@ -1,0 +1,71 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Проверка теста" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>{% trans "Проверка теста" %}: {{ submission.test.title }}</h3>
+            <p>{% trans "Ученик" %}: <strong>{{ submission.student.username }}</strong></p>
+            <p>{% trans "Отправлено" %}: {{ submission.submitted_at|date:"d.m.Y H:i" }}</p>
+        </div>
+
+        <div class="card-body">
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                {% for answer in answers %}
+                    <div class="question-review-block mb-4 p-3 border rounded">
+                        
+                        <p class="font-weight-bold">
+                            {% trans "Вопрос" %}: ({{ answer.question.text|safe }})
+                        </p>
+                        
+                        <p class="text-muted">
+                            {% trans "Ответ студента" %}:
+                        </p>
+                        <div class="student-answer p-2 bg-light rounded">
+                            {{ answer.answer_text|linebreaksbr }}
+                        </div>
+                        
+                        <hr>
+
+                        {% if answer.question.question_type == 'open_ended' %}
+                            <div class="form-group">
+                                <label for="score_{{ answer.id }}">
+                                    <strong>{% trans "Оценка" %} (макс. {{ answer.question.max_score }}):</strong>
+                                </label>
+                                <input type="number" 
+                                       name="score_{{ answer.id }}" 
+                                       id="score_{{ answer.id }}" 
+                                       class="form-control"
+                                       value="{{ answer.score }}"
+                                       min="0" 
+                                       max="{{ answer.question.max_score }}">
+                            </div>
+                        {% else %}
+                            <div class="form-group">
+                                <label><strong>{% trans "Автоматическая оценка" %}:</strong></label>
+                                <p>
+                                    <strong>{{ answer.score }} / {{ answer.question.max_score }}</strong> 
+                                    (Ответ: '{{ answer.answer_text }}'. 
+                                    Правильно: '{{ answer.question.correct_answer }}')
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                
+                <button type="submit" class="btn btn-success btn-lg">
+                    {% trans "Завершить проверку и сохранить баллы" %}
+                </button>
+            </form>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

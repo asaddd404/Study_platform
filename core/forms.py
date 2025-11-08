@@ -103,11 +103,29 @@ class TestForm(forms.ModelForm):
             'description': 'Описание (инструкция)',
             'passing_score': 'Проходной балл (в %)',
         }
+# eduplatform/core/forms.py
+
+# ... (другие формы остаются как есть) ...
 
 class QuestionForm(forms.ModelForm):
+    # Этот блок у тебя уже есть, но я его поменял
+    # ⬇️ ⬇️ ⬇️
+    CORRECT_CHOICES = [
+        ('a', 'A'),
+        ('b', 'B'),
+        ('c', 'C'),
+        ('d', 'D'),
+    ]
+    correct_answer = forms.ChoiceField(
+        choices=CORRECT_CHOICES,
+        required=False, # Необязателен для "развернутого ответа"
+        widget=forms.Select(attrs={'class': 'form-input'}), # <-- Меняем виджет на Select
+        label='Правильный ответ (для типа "Выбор из вариантов")'
+    )
+    # ⬆️ ⬆️ ⬆️
+
     class Meta:
         model = TestQuestion
-        # --- ДОБАВЛЕНЫ НОВЫЕ ПОЛЯ ---
         fields = [
             'text', 
             'question_type',
@@ -118,24 +136,16 @@ class QuestionForm(forms.ModelForm):
             'correct_answer', 
             'max_score'
         ]
+        
+        # ⬇️ ⬇️ ⬇️ ВОТ ЧТО НУЖНО ДОБАВИТЬ ⬇️ ⬇️ ⬇️
+        # Этот блок добавит класс 'form-input' ко всем полям
         widgets = {
             'text': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
-            # --- НОВЫЕ ВИДЖЕТЫ ---
-            'question_type': forms.Select(attrs={'class': 'form-input', 'id': 'id_question_type_select'}),
+            'question_type': forms.Select(attrs={'class': 'form-input', 'id': 'id_question_type'}), # <-- Добавляем ID для JS
             'option_a': forms.TextInput(attrs={'class': 'form-input'}),
             'option_b': forms.TextInput(attrs={'class': 'form-input'}),
             'option_c': forms.TextInput(attrs={'class': 'form-input'}),
             'option_d': forms.TextInput(attrs={'class': 'form-input'}),
-            'correct_answer': forms.TextInput(attrs={'class': 'form-input'}),
-            'max_score': forms.NumberInput(attrs={'class': 'form-input', 'value': 1}),
+            'max_score': forms.NumberInput(attrs={'class': 'form-input'}),
         }
-        labels = {
-            'text': 'Текст вопроса',
-            'question_type': 'Тип вопроса',
-            'option_a': 'Вариант А',
-            'option_b': 'Вариант Б',
-            'option_c': 'Вариант В',
-            'option_d': 'Вариант Г',
-            'correct_answer': 'Правильный ответ',
-            'max_score': 'Балл за вопрос',
-        }
+        # ⬆️ ⬆️ ⬆️ ---------------------------------- ⬆️ ⬆️ ⬆️
