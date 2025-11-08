@@ -1,13 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="ru" x-data="{ openModule: null }"> 
+<html lang="ru" x-data="{ openModule: null, isCourseSidebarOpen: window.innerWidth >= 768 }" @resize.window="isCourseSidebarOpen = (window.innerWidth >= 768)"> 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ course.title|default:"Мой Курс" }}</title>
     
     <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         :root {
@@ -21,23 +21,35 @@
             --shadow: 0 4px 12px rgba(0,0,0,0.04);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body { 
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--grey-light);
             color: var(--black);
             margin: 0;
+            position: relative; /* Для мобильного оверлея */
+        }
+
+        .course-layout {
             display: flex;
             height: 100vh;
         }
-        aside {
+
+        .course-sidebar {
             width: 320px;
             flex-shrink: 0;
             background: var(--white);
             border-right: 1px solid var(--grey-border);
             padding: 24px;
             overflow-y: auto;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            transition: transform 0.3s ease-in-out;
+            z-index: 120; 
         }
-        main {
+
+        .course-content {
             flex-grow: 1;
             background: var(--white);
             margin: 24px;
@@ -45,7 +57,11 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             overflow-y: auto;
+            height: calc(100vh - 48px);
+            position: relative; 
+            z-index: 10; 
         }
+        
         aside h2 { font-size: 1.5rem; margin-bottom: 8px; }
         aside > p { color: var(--grey-text); margin-bottom: 24px; font-size: 0.9rem; }
 
@@ -111,8 +127,6 @@
             z-index: 1000;
         }
         
-        /* ⬇️ ⬇️ ⬇️ Я ДОБАВИЛ ЭТИ СТИЛИ ДЛЯ КНОПКИ ⬇️ ⬇️ ⬇️
-        */
         .btn {
             display: inline-block;
             font-weight: 600;
@@ -128,82 +142,264 @@
             border-radius: var(--radius);
             text-decoration: none;
             transition: all 0.2s ease-in-out;
-            width: 100%; /* Делаем во всю ширину */
-            margin-bottom: 24px; /* Отступ снизу */
         }
         
         .btn-secondary {
-            color: var(--black);
-            background-color: var(--grey-light);
-            border-color: var(--grey-border);
+            color: var(--white);
+            background-color: var(--blue); /* Изменил на синий для акцента */
+            border-color: var(--blue);
         }
         
         .btn-secondary:hover {
-            background-color: #f1f5f9; /* Чуть темнее */
-            border-color: #d1d9e4;
+            background-color: #0069d9; /* Темнее синий */
+            border-color: #0062cc;
         }
-        /* ⬆️ ⬆️ ⬆️ КОНЕЦ СТИЛЕЙ ДЛЯ КНОПКИ ⬆️ ⬆️ ⬆️
+
+        /*
+         =========================================
+         === 1. НОВЫЕ СТИЛИ ДЛЯ КНОПОК НАВИГАЦИИ ===
+         =========================================
         */
+        .course-sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .course-sidebar-nav .btn {
+            width: 100%;
+            display: flex; /* Для иконки и текста */
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: left;
+            padding: 12px 16px; 
+        }
+        .course-sidebar-nav .btn svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .course-sidebar-nav .btn span {
+            flex-grow: 1;
+        }
+        
+        /* Стиль для "вторичной" кнопки (Назад) */
+        .btn-secondary-outline {
+             background-color: var(--white);
+             color: var(--grey-text);
+             border-color: var(--grey-border);
+        }
+        .btn-secondary-outline:hover {
+            background-color: var(--grey-light);
+            border-color: #d1d9e4;
+            color: var(--black);
+        }
+
+
+        /*
+         ==================================
+         === 2. СТИЛИ ДЛЯ АДАПТИВНОСТИ ===
+         ==================================
+        */
+        .course-sidebar-toggle-button {
+            display: none; /* Скрыт на десктопе */
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 130; /* Поверх всего */
+            background: var(--white);
+            border: 1px solid var(--grey-border);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+        .course-sidebar-toggle-button svg {
+            width: 24px;
+            height: 24px;
+            margin: auto;
+            color: var(--black);
+        }
+        .course-sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 110; 
+        }
+
+        /* Кнопка "Закрыть (X)" внутри сайдбара */
+        .course-sidebar-close-button {
+            display: none; /* Скрыта на десктопе */
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 140; /* Поверх кнопок навигации */
+        }
+
+        @media (max-width: 768px) {
+            .course-layout {
+                display: block; 
+                height: auto;
+            }
+            .course-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 120;
+                transform: translateX(-100%);
+                border-right: 1px solid var(--grey-border);
+                /* Добавляем отступ сверху для кнопки "X" */
+                padding-top: 50px; 
+            }
+            
+            .course-sidebar[x-show] {
+                transform: translateX(0);
+            }
+            
+            .course-content {
+                width: auto;
+                margin: 16px;
+                padding: 24px 20px;
+                height: auto;
+                min-height: calc(100vh - 32px);
+                margin-top: 70px; 
+            }
+            
+            .course-sidebar-toggle-button {
+                display: flex; 
+            }
+            
+            .course-sidebar-overlay[x-show] {
+                display: block; 
+            }
+            
+            .course-sidebar-close-button {
+                display: block; /* Показываем "X" на мобильных */
+            }
+        }
+        
     </style>
 </head>
 <body>
 
-    <aside>
-        <a href="javascript:history.back()" class="btn btn-secondary">Назад</a>
+    <button class="course-sidebar-toggle-button" @click="isCourseSidebarOpen = true" x-show="!isCourseSidebarOpen">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+    </button>
+    
+    <div class="course-sidebar-overlay" 
+         x-show="isCourseSidebarOpen && window.innerWidth < 768" 
+         @click="isCourseSidebarOpen = false" 
+         style="display: none;"
+         x-transition:enter="transition-opacity ease-linear duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+    </div>
 
-        <h2>{{ course.title }}</h2>
-        <p>Навигация по курсу</p>
 
-        {% if modules %}
-        
-            {% for module in modules %}
-                <div x-data="{ open: false }"> 
-                    
-                    <div class="module-header" @click="open = !open">
-                        <span>{{ module.title }}</span>
-                        <span x-text="open ? '−' : '+'" style="color: var(--grey-text);"></span>
-                    </div>
+    <div class="course-layout">
+        <aside class="course-sidebar" 
+               x-show="isCourseSidebarOpen" 
+               x-transition:enter="transition ease-out duration-300"
+               x-transition:enter-start="transform -translate-x-full"
+               x-transition:enter-end="transform translate-x-0"
+               x-transition:leave="transition ease-in duration-300"
+               x-transition:leave-start="transform translate-x-0"
+               x-transition:leave-end="transform -translate-x-full"
+        >
+            
+            <button class="course-sidebar-close-button" @click="isCourseSidebarOpen = false">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 24px; height: 24px; color: var(--grey-text);">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <nav class="course-sidebar-nav">
+                <a href="{% url 'core:profile' %}" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A1.75 1.75 0 0117.749 22H6.25a1.75 1.75 0 01-1.749-1.882z" />
+                    </svg>
+                    <span>Мой профиль</span>
+                </a>
+                <a href="javascript:history.back()" class="btn btn-secondary-outline">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                    </svg>
+                    <span>Назад</span>
+                </a>
+            </nav>
+            
+            <h2 style="margin-top: 0;">{{ course.title }}</h2>
+            <p>Навигация по курсу</p>
 
-                    <ul class="lesson-list" x-show="open" x-transition>
-                        {% for lesson in module.lessons.all %}
-                            <li>
+            {% if modules %}
+            
+                {% for module in modules %}
+                    <div x-data="{ open: false }"> 
+                        
+                        <div class="module-header" @click="open = !open">
+                            <span>{{ module.title }}</span>
+                            <span x-text="open ? '−' : '+'" style="color: var(--grey-text);"></span>
+                        </div>
+
+                        <ul class="lesson-list" x-show="open" x-transition>
+                            {% for lesson in module.lessons.all %}
+                                <li>
+                                    <a href="#"
+                                       hx-get="{% url 'core:new_lesson_detail' lesson.id %}"  
+                                       hx-target="#course-content-area"
+                                       hx-swap="innerHTML"
+                                       @click="if (window.innerWidth < 768) isCourseSidebarOpen = false" >
+                                        {{ lesson.title }}
+                                    </a>
+                                </li>
+                            {% empty %}
+                                <li style="padding: 10px 8px; color: var(--grey-text);">(Нет уроков)</li>
+                            {% endfor %}
+                        </ul>
+
+                        {% if module.tests.all %}
+                        <ul class="lesson-list" x-show="open" x-transition>
+                            <li class="test-item">
                                 <a href="#"
-                                   hx-get="{% url 'core:new_lesson_detail' lesson.id %}"  
+                                   hx-get="{% url 'core:new_test_detail' module.id %}"
                                    hx-target="#course-content-area"
-                                   hx-swap="innerHTML">
-                                    {{ lesson.title }}
+                                   hx-swap="innerHTML"
+                                   @click="if (window.innerWidth < 768) isCourseSidebarOpen = false" >
+                                     {{ module.tests.first.title }}
                                 </a>
                             </li>
-                        {% empty %}
-                            <li style="padding: 10px 8px; color: var(--grey-text);">(Нет уроков)</li>
-                        {% endfor %}
-                    </ul>
+                        </ul>
+                        {% endif %}
+                    </div> 
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--grey-text);">В этом курсе пока нет модулей.</p>
+            {% endif %}
+        </aside>
 
-                    {% if module.tests.all %}
-                    <ul class="lesson-list" x-show="open" x-transition>
-                        <li class="test-item">
-                            <a href="#"
-                               hx-get="{% url 'core:new_test_detail' module.id %}"
-                               hx-target="#course-content-area"
-                               hx-swap="innerHTML">
-                                 {{ module.tests.first.title }}
-                            </a>
-                        </li>
-                    </ul>
-                    {% endif %}
-                </div> 
-            {% endfor %}
-        {% else %}
-            <p style="color: var(--grey-text);">В этом курсе пока нет модулей.</p>
-        {% endif %}
-    </aside>
-
-    <main id="course-content-area">
-        <h1>Добро пожаловать!</h1>
-        <p>Выберите урок или тест из меню слева, чтобы начать.</p>
-    </main>
-
-    <div id="loading">Загрузка...</div>
+        
+        <main id="course-content-area" class="course-content">
+            <h1>Добро пожаловать!</h1>
+            <p>Выберите урок или тест из меню слева, чтобы начать.</p>
+        </main>
+    </div> <div id="loading">Загрузка...</div>
     
     <script>
         // Показываем индикатор загрузки
@@ -214,10 +410,13 @@
             document.getElementById('loading').style.display = 'none';
         });
 
-        // ГЛАВНАЯ ФИШКА: оживляем Alpine после HTMX
+        // Оживляем Alpine после HTMX-запроса (если нужно)
         document.body.addEventListener('htmx:afterSwap', (evt) => {
             if (evt.detail.target.id === 'course-content-area') {
-                Alpine.initTree(evt.detail.target);
+                // В Alpine 3+ это часто происходит автоматически,
+                // но если интерактивность в загруженном контенте не работает,
+                // раскомментируйте строку ниже:
+                // Alpine.initTree(evt.detail.target);
             }
         });
     </script>
