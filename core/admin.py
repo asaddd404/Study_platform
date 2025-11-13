@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from django.contrib.auth.admin import UserAdmin
 from .models import (
     User, Course, Module, Lesson, Resource, 
@@ -26,24 +27,15 @@ class LessonInline(admin.TabularInline):
     extra = 1 # Показать 1 пустой слот для нового урока
     fields = ('title', 'author', 'created_at')
     readonly_fields = ('created_at',)
-    # Мы не можем автоматически задать 'author' здесь, 
-    # так как у inline нет доступа к 'request'.
-    # Автор будет назначаться, если урок создан из профиля учителя.
-    # Уроки, созданные в админке, нужно будет назначить вручную.
 
 # Админка для Модулей
 class ModuleAdmin(admin.ModelAdmin):
     list_display = ('title', 'course', 'created_at')
     list_filter = ('course',)
-    search_fields = ('title', 'description')
-    
-    # <-- ВОТ ГЛАВНАЯ ЧАСТЬ -->
-    # Удобный интерфейс "двойного списка" для выбора учителей
+    search_fields = ('title', 'description') # <-- 'search_fields' здесь есть
     filter_horizontal = ('teachers',)
-    
     inlines = [LessonInline] # Показываем уроки внутри
 
-# Регистрируем Модуль с новыми настройками
 admin.site.register(Module, ModuleAdmin)
 
 
@@ -52,13 +44,9 @@ class LessonAdmin(admin.ModelAdmin):
     list_display = ('title', 'module', 'author', 'created_at')
     list_filter = ('module__course', 'module', 'author')
     search_fields = ('title', 'content')
-    # Позволяем менять автора в админке
     autocomplete_fields = ('author', 'module') # Удобный поиск
 
 admin.site.register(Lesson, LessonAdmin)
-
-
-# ⬇️ ⬇️ ⬇️ ИЗМЕНЕНИЕ: Мы удалили классы CourseFeatureInline и TeacherCardInline отсюда ⬇️ ⬇️ ⬇️
 
 
 # Админка для Курсов
@@ -66,8 +54,6 @@ class CourseAdmin(admin.ModelAdmin):
     list_display = ('title', 'published', 'created_at')
     list_filter = ('published',)
     search_fields = ('title', 'description')
-    # Это поле 'teachers' из User. Оно нам больше не нужно для главной, 
-    # но пусть остается для других целей (если оно нужно).
     filter_horizontal = ('teachers',) 
     
     class ModuleInline(admin.TabularInline):
@@ -75,7 +61,6 @@ class CourseAdmin(admin.ModelAdmin):
         extra = 0
         fields = ('title',)
         
-    # ⬇️ ⬇️ ⬇️ ИЗМЕНЕНИЕ: Убираем CourseFeatureInline и TeacherCardInline из списка ⬇️ ⬇️ ⬇️
     inlines = [ModuleInline]
     
 admin.site.register(Course, CourseAdmin)
@@ -83,14 +68,113 @@ admin.site.register(Course, CourseAdmin)
 
 # ... Регистрация остальных моделей ...
 admin.site.register(Resource)
-admin.site.register(Test)
-admin.site.register(TestQuestion)
+
+# ⬇️ ⬇️ ⬇️ ВОТ ИЗМЕНЕНИЕ ⬇️ ⬇️ ⬇️
+# Мы заменяем 'admin.site.register(Test)' на этот класс:
+
+@admin.register(Test)
+class TestAdmin(admin.ModelAdmin):
+    """
+    Кастомная админка для Тестов.
+    """
+    list_display = ('title', 'module', 'passing_score', 'created_at')
+    list_filter = ('module__course',)
+    
+    # ЭТА СТРОКА ИСПРАВЛЯЕТ ОШИБКУ:
+    search_fields = ('title', 'description') 
+    
+    # А эта сделает админку еще удобнее (бонус):
+    autocomplete_fields = ('module',) 
+    
+    ordering = ('-created_at',)
+
+# ⬆️ ⬆️ ⬆️ КОНЕЦ ИЗМЕНЕНИЯ ⬆️ ⬆️ ⬆️
+
+
+@admin.register(TestQuestion)
+class TestQuestionAdmin(admin.ModelAdmin):
+    """
+    Кастомная админка для Вопросов Теста.
+    """
+    list_display = ('text', 'test', 'question_type', 'max_score')
+    list_filter = ('test__module__course', 'test', 'question_type')
+    search_fields = ('text', 'test__title')
+    autocomplete_fields = ('test',) # <-- Эта строка теперь будет работать
+    ordering = ('test', 'created_at')
+
+    def get_fieldsets(self, request, obj=None):
+        """
+        Динамически показываем разные наборы полей 
+        в зависимости от типа вопроса.
+        """
+        base_fields = (None, {'fields': ('test', 'text', 'question_type', 'max_score')})
+        
+        # Если это вопрос с выбором ответа
+        if obj and obj.question_type == 'choice':
+            return (
+                base_fields,
+                ('Варианты и Ответ (для "Выбора из вариантов")', {
+                    'fields': ('option_a', 'option_b', 'option_c', 'option_d', 'correct_answer')
+                })
+            )
+        # Если это открытый вопрос
+        elif obj and obj.question_type == 'open_ended':
+            # Не показываем варианты и поле для ответа
+            return (base_fields,)
+        
+        # По умолчанию (при создании нового вопроса) показываем все
+        return (
+            base_fields,
+            ('Варианты и Ответ', {
+                'description': "Для типа 'Выбор из вариантов', заполните варианты. " \
+                               "После сохранения вы сможете выбрать правильный ответ из выпадающего списка.",
+                'fields': ('option_a', 'option_b', 'option_c', 'option_d', 'correct_answer')
+            })
+        )
+
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Главная магия: Превращаем поле 'correct_answer' в выпадающий список.
+        """
+        form = super().get_form(request, obj, **kwargs)
+        
+        # Мы делаем это, только если РЕДАКТИРУЕМ существующий
+        # вопрос типа 'choice'
+        if obj and obj.question_type == 'choice':
+            
+            # Собираем в список только те варианты, которые не пустые
+            choices = [('', '---------')] # Пустой выбор
+            
+            # ВАЖНО: 
+            # Значением будет сам текст (obj.option_a), 
+            # а отображением - "A: [текст]"
+            if obj.option_a:
+                choices.append((obj.option_a, f"A: {obj.option_a}"))
+            if obj.option_b:
+                choices.append((obj.option_b, f"B: {obj.option_b}"))
+            if obj.option_c:
+                choices.append((obj.option_c, f"C: {obj.option_c}"))
+            if obj.option_d:
+                choices.append((obj.option_d, f"D: {obj.option_d}"))
+            
+            # Применяем наши choices к полю 'correct_answer'
+            form.base_fields['correct_answer'] = forms.ChoiceField(
+                choices=choices,
+                required=True, # Ставим True, т.к. у вопроса должен быть ответ
+                label="Правильный ответ"
+            )
+        
+        elif obj and obj.question_type == 'open_ended':
+            # Для открытых вопросов прячем поле ответа, оно не нужно
+            form.base_fields['correct_answer'].widget = forms.HiddenInput()
+
+        return form
+
+
 admin.site.register(TestSubmission)
 admin.site.register(TestAnswer)
 admin.site.register(Progress)
 
-
-# ⬇️ ⬇️ ⬇️ ДОБАВЬТЕ ЭТИ ДВА НОВЫХ БЛОКА В КОНЕЦ ФАЙЛА ⬇️ ⬇️ ⬇️
 
 # --- 1. Новая админка для "Чему вы научитесь" ---
 @admin.register(CourseFeature)
@@ -111,5 +195,3 @@ class TeacherCardAdmin(admin.ModelAdmin):
     autocomplete_fields = ('course',) # Удобный поиск курса
     ordering = ('order',)
     fields = ('course', 'order', 'name', 'description', 'photo')
-
-# ⬆️ ⬆️ ⬆️ КОНЕЦ НОВЫХ БЛОКОВ ⬆️ ⬆️ ⬆️

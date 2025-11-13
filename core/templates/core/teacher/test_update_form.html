@@ -63,43 +63,92 @@
     </div>
 </div>
 {% endblock %}
-
-
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Находим селектор (мы задали ему id='id_question_type' в forms.py)
-    const questionTypeSelect = document.getElementById('id_question_type'); 
-    if (!questionTypeSelect) return; 
+    const questionTypeSelect = document.getElementById('id_question_type');
+    const correctAnswerP = document.querySelector('label[for="id_correct_answer"]').closest('p');
+    const hiddenInput = document.getElementById('id_correct_answer');
 
-    // 2. Находим <p> теги, которые Django создал вокруг полей
-    // Это самый надежный способ
-    const optionA = document.querySelector('label[for="id_option_a"]').closest('p');
-    const optionB = document.querySelector('label[for="id_option_b"]').closest('p');
-    const optionC = document.querySelector('label[for="id_option_c"]').closest('p');
-    const optionD = document.querySelector('label[for="id_option_d"]').closest('p');
-    const correctAnswer = document.querySelector('label[for="id_correct_answer"]').closest('p');
+    if (!questionTypeSelect || !correctAnswerP || !hiddenInput) {
+        console.error('Не найдены элементы формы вопроса');
+        return;
+    }
 
-    // 3. Собираем их в массив
-    const choiceFields = [optionA, optionB, optionC, optionD, correctAnswer];
+    // Создаём <select>
+    const select = document.createElement('select');
+    select.name = 'correct_answer';  // Имя должно совпадать с полем формы
+    select.className = 'form-input';
+    select.required = true;
+    select.style.width = '100%';
+    select.style.marginTop = '8px';
 
-    function toggleFields() {
-        // 'choice' - это значение из <option value="choice">
-        if (questionTypeSelect.value === 'choice') {
-            choiceFields.forEach(field => {
-                if(field) field.style.display = 'block';
-            });
-        } else {
-            // 'open_ended' (или любой другой тип)
-            choiceFields.forEach(field => {
-                if(field) field.style.display = 'none';
-            });
+    // Контейнер для <select>
+    const selectContainer = document.createElement('div');
+    selectContainer.id = 'correct-answer-select-container';
+    selectContainer.appendChild(select);
+    selectContainer.style.display = 'none';
+
+    // Вставляем после <p>
+    correctAnswerP.parentNode.insertBefore(selectContainer, correctAnswerP.nextSibling);
+
+    function updateSelect() {
+        select.innerHTML = '<option value="">— Выберите правильный ответ —</option>';
+
+        const optionInputs = [
+            { id: 'id_option_a', label: 'A' },
+            { id: 'id_option_b', label: 'B' },
+            { id: 'id_option_c', label: 'C' },
+            { id: 'id_option_d', label: 'D' },
+        ];
+
+        optionInputs.forEach(opt => {
+            const input = document.getElementById(opt.id);
+            if (input && input.value.trim()) {
+                const option = new Option(`${opt.label}: ${input.value.trim()}`, input.value.trim());
+                select.add(option);
+            }
+        });
+
+        // Восстанавливаем выбранное значение
+        if (hiddenInput.value) {
+            select.value = hiddenInput.value;
         }
     }
-    
-    // 4. Вызываем при загрузке и при изменении
-    toggleFields();
-    questionTypeSelect.addEventListener('change', toggleFields);
+
+    function toggleSelect() {
+        if (questionTypeSelect.value === 'choice') {
+            updateSelect();
+            selectContainer.style.display = 'block';
+            correctAnswerP.style.display = 'none';  // Скрываем оригинальное поле
+        } else {
+            selectContainer.style.display = 'none';
+            correctAnswerP.style.display = 'block';
+        }
+    }
+
+    // Инициализация
+    toggleSelect();
+
+    // События
+    questionTypeSelect.addEventListener('change', toggleSelect);
+
+    ['id_option_a', 'id_option_b', 'id_option_c', 'id_option_d'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', () => {
+                if (questionTypeSelect.value === 'choice') {
+                    updateSelect();
+                }
+            });
+        }
+    });
+
+    // Перед отправкой — копируем в скрытое поле
+    const form = document.getElementById('add-question-form');
+    form.addEventListener('submit', function(e) {
+        hiddenInput.value = select.value;
+    });
 });
 </script>
 {% endblock %}
