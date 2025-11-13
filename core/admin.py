@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (
     User, Course, Module, Lesson, Resource, 
-    Test, TestQuestion, TestSubmission, TestAnswer, Progress
+    Test, TestQuestion, TestSubmission, TestAnswer, Progress, CourseFeature, TeacherCard
 )
 
 # Переопределяем админку Пользователя, чтобы было видно роль
@@ -58,22 +58,26 @@ class LessonAdmin(admin.ModelAdmin):
 admin.site.register(Lesson, LessonAdmin)
 
 
+# ⬇️ ⬇️ ⬇️ ИЗМЕНЕНИЕ: Мы удалили классы CourseFeatureInline и TeacherCardInline отсюда ⬇️ ⬇️ ⬇️
+
+
 # Админка для Курсов
 class CourseAdmin(admin.ModelAdmin):
     list_display = ('title', 'published', 'created_at')
     list_filter = ('published',)
     search_fields = ('title', 'description')
-    # Тоже добавляем удобный выбор учителей на уровне курса
-    filter_horizontal = ('teachers',)
+    # Это поле 'teachers' из User. Оно нам больше не нужно для главной, 
+    # но пусть остается для других целей (если оно нужно).
+    filter_horizontal = ('teachers',) 
     
-    # Показываем модули внутри курса
     class ModuleInline(admin.TabularInline):
         model = Module
         extra = 0
         fields = ('title',)
         
+    # ⬇️ ⬇️ ⬇️ ИЗМЕНЕНИЕ: Убираем CourseFeatureInline и TeacherCardInline из списка ⬇️ ⬇️ ⬇️
     inlines = [ModuleInline]
-
+    
 admin.site.register(Course, CourseAdmin)
 
 
@@ -84,3 +88,28 @@ admin.site.register(TestQuestion)
 admin.site.register(TestSubmission)
 admin.site.register(TestAnswer)
 admin.site.register(Progress)
+
+
+# ⬇️ ⬇️ ⬇️ ДОБАВЬТЕ ЭТИ ДВА НОВЫХ БЛОКА В КОНЕЦ ФАЙЛА ⬇️ ⬇️ ⬇️
+
+# --- 1. Новая админка для "Чему вы научитесь" ---
+@admin.register(CourseFeature)
+class CourseFeatureAdmin(admin.ModelAdmin):
+    list_display = ('title', 'course', 'order') # Показываем важное в списке
+    list_filter = ('course',) # Позволяем фильтровать по курсу
+    search_fields = ('title', 'description')
+    autocomplete_fields = ('course',) # Удобный поиск курса
+    ordering = ('order',)
+    fields = ('course', 'order', 'title', 'description', 'icon_svg')
+
+# --- 2. Новая админка для "Карточек преподавателей" ---
+@admin.register(TeacherCard)
+class TeacherCardAdmin(admin.ModelAdmin):
+    list_display = ('name', 'course', 'order') # Показываем важное в списке
+    list_filter = ('course',) # Позволяем фильтровать по курсу
+    search_fields = ('name', 'description')
+    autocomplete_fields = ('course',) # Удобный поиск курса
+    ordering = ('order',)
+    fields = ('course', 'order', 'name', 'description', 'photo')
+
+# ⬆️ ⬆️ ⬆️ КОНЕЦ НОВЫХ БЛОКОВ ⬆️ ⬆️ ⬆️

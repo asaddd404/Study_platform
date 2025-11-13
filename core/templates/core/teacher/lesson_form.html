@@ -1,6 +1,9 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
+{% block extra_head %}
+    {{ form.media.css }}
+{% endblock %}
 {% block title %}{{ form_title }} - EduPlatform{% endblock %}
 
 {% block content %}
@@ -81,4 +84,8 @@
         </div>
     </main>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ form.media.js }}
 {% endblock %}

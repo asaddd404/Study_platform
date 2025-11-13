@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}Онлайн-курс: Культура речи и стилистика{% endblock %}
 {% block content %}
+    
     <header class="header" id="main-header">
         <div class="container">
             <a href="{% url 'core:index' %}" class="logo">
@@ -75,7 +76,6 @@
             {% endif %}
         </nav>
     </div>
-
     <main>
         <section class="section section-bg-white hero-section">
             <div class="container">
@@ -92,45 +92,46 @@
         <section class="section section-bg-gray">
             <div class="container">
                 <h2 class="section-title">Чему вы научитесь на курсе?</h2>
+                
                 <div class="features-grid">
+                    {% for feature in features %}
                     <div class="feature-card">
-                        <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" /></svg></div>
-                        <h3>Обрести уверенность</h3><p>Забудьте о страхе публичных выступлений.</p>
+                        <div class="feature-icon">
+                            {% autoescape off %}
+                                {{ feature.icon_svg|default:'' }}
+                            {% endautoescape %}
+                        </div>
+                        <h3>{{ feature.title }}</h3>
+                        <p>{{ feature.description }}</p>
                     </div>
-                    <div class="feature-card">
-                         <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg></div>
-                        <h3>Говорить грамотно</h3><p>Избавьтесь от речевых ошибок и слов-паразитов.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2V7a2 2 0 012-2h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V8z" /></svg></div>
-                        <h3>Быть убедительным</h3><p>Научитесь подбирать точные слова, чтобы влиять.</p>
-                    </div>
-                     <div class="feature-card">
-                         <div class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></div>
-                        <h3>Писать профессионально</h3><p>Создавайте безупречные тексты — от писем до эссе.</p>
-                    </div>
+                    {% empty %}
+                        <p>Описание того, чему вы научитесь, скоро появится.</p>
+                    {% endfor %}
                 </div>
-            </div>
+                </div>
         </section>
         <section class="section section-bg-white">
             <div class="container">
                 <h2 class="section-title">Ваши преподаватели — эксперты-филологи</h2>
+                
                 <div class="teachers-grid">
+                    {% for card in teacher_cards %}
                     <div class="teacher-card">
-                        <img src="{% static 'images/teachers/img.png' %}" alt="Дмитрюк Н.В.">
-                        <h4>Дмитрюк Н.В.</h4><p>д.ф.н., профессор</p>
+                        {% if card.photo %}
+                            <img src="{{ card.photo.url }}" alt="{{ card.name }}">
+                        {% endif %}
+                        
+                        <h4>{{ card.name }}</h4>
+                        
+                        <p>{{ card.description }}</p>
                     </div>
-                    <div class="teacher-card">
-                         <img src="{% static 'images/teachers/2img.png' %}" alt="Стычева О.А.">
-                        <h4>Стычева О.А.</h4><p>к.п.н., доцент</p>
-                    </div>
-                    <div class="teacher-card">
-                        <img src="{% static 'images/teachers/1img.png' %}" alt="Мезенцева Е.С.">
-                        <h4>Мезенцева Е.С.</h4><p>к.ф.н., ст. преподаватель</p>
-                    </div>
+                    {% empty %}
+                        <p>Преподаватели скоро будут добавлены.</p>
+                    {% endfor %}
                 </div>
-            </div>
+                </div>
         </section>
+
         <section class="section section-bg-gray">
             <div class="container">
                 <h2 class="section-title">Программа курса: от основ до мастерства</h2>

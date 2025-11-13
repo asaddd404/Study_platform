@@ -1,7 +1,29 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User, Lesson, Module, Test, TestQuestion
+from django_summernote.widgets import SummernoteWidget  # <-- 1. ДОБАВЛЕН ЭТОТ ИМПОРТ
+import re
 
+def clean_summernote_content(html):
+    if not html:
+        return ''
+
+    # 1. Убираем <br> в пустых ячейках таблицы — НО ТОЛЬКО если ячейка РЕАЛЬНО пуста
+    # Было: удаляло <td><br></td> → плохо
+    # Стало: оставляем <br>, если ячейка иначе была бы пустой
+    html = re.sub(r'<(td|th)([^>]*)>\s*<br\s*/?>\s*</\1>', r'<\1\2><br></\1>', html)
+
+    # 2. Убираем полностью пустые теги <p>, <div>, <h1>-<h6>
+    html = re.sub(r'<(p|h[1-6]|div)([^>]*)>\s*</\1>', '', html)
+
+    # 3. Убираем пустые <br> в конце
+    html = html.strip()
+    html = re.sub(r'<br\s*/?>$', '', html, flags=re.IGNORECASE)
+
+    # 4. Убираем class="" у заголовков
+    html = re.sub(r'<(h[1-6]) class="">', r'<\1>', html)
+
+    return html.strip()
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -59,7 +81,11 @@ class LessonForm(forms.ModelForm):
         widgets = {
             'module': forms.Select(attrs={'class': 'form-input'}),
             'title': forms.TextInput(attrs={'class': 'form-input'}),
-            'content': forms.Textarea(attrs={'class': 'form-input', 'rows': 10}),
+            
+            # ⬇️ ⬇️ ⬇️ 2. ВОТ ГЛАВНОЕ ИЗМЕНЕНИЕ ⬇️ ⬇️ ⬇️
+            'content': SummernoteWidget(),
+            # ⬆️ ⬆️ ⬆️ --------------------------- ⬆️ ⬆️ ⬆️
+            
             'video_url': forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}),
             'video_file': forms.FileInput(attrs={'class': 'form-input'}),
             'image_file': forms.FileInput(attrs={'class': 'form-input'}),
@@ -68,10 +94,7 @@ class LessonForm(forms.ModelForm):
             'is_free_preview': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
         labels = {
-            'video_url': 'Ссылка на видео (Youtube/Vimeo)',
-            'video_file': 'Или загрузите видео-файл',
-            'image_file': 'Или загрузите изображение',
-            'pdf_file': 'Или загрузите PDF-документ',
+            # ... (ваши labels остаются без изменений) ...
         }
 
     def __init__(self, *args, **kwargs):

@@ -332,3 +332,42 @@ class Progress(models.Model):
 
     def __str__(self):
         return f"{self.student.username} - {self.lesson.title}"
+
+
+class CourseFeature(models.Model):
+    """
+    Модель для описания "Чему вы научитесь" на главной странице.
+    """
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="features", verbose_name=_("Курс"))
+    title = models.CharField(max_length=200, verbose_name=_("Заголовок"))
+    description = models.TextField(verbose_name=_("Описание"))
+    icon_svg = models.TextField(blank=True, verbose_name=_("Иконка (SVG код)"))
+    order = models.PositiveIntegerField(default=0, verbose_name=_("Порядок"))
+
+    class Meta:
+        verbose_name = _("Особенность курса")
+        verbose_name_plural = _("Особенности курса")
+        ordering = ['order', 'id'] 
+
+    def __str__(self):
+        return self.title
+
+# ⬇️ ⬇️ ⬇️ МОДЕЛЬ 2: "КАРТОЧКА ПРЕПОДАВАТЕЛЯ" (для главной) ⬇️ ⬇️ ⬇️
+class TeacherCard(models.Model):
+    """
+    Модель для карточки преподавателя на главной странице.
+    НЕ СВЯЗАНА с моделью User.
+    """
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="teacher_cards", verbose_name=_("Курс"))
+    name = models.CharField(max_length=200, verbose_name=_("Имя преподавателя"))
+    description = models.CharField(max_length=255, verbose_name=_("Описание (напр. 'д.ф.н., профессор')"))
+    photo = models.ImageField(upload_to='teacher_cards/', blank=False, null=False, verbose_name=_("Фотография"))
+    order = models.PositiveIntegerField(default=0, verbose_name=_("Порядок"))
+
+    class Meta:
+        verbose_name = _("Карточка преподавателя (на главной)")
+        verbose_name_plural = _("Карточки преподавателей (на главной)")
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.name

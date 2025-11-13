@@ -32,12 +32,30 @@ def teacher_required(function):
     return wrap
 # ===================================================================
 
-
 def index(request):
     course = Course.objects.first()
-    modules = Module.objects.filter(course=course).order_by('created_at') if course else []
-    return render(request, 'core/index.html', {'course': course, 'modules': modules})
+    
+    # ⬇️ ⬇️ ⬇️ НАЧАЛО ИЗМЕНЕНИЙ ⬇️ ⬇️ ⬇️
+    modules = []
+    features = []
+    teacher_cards = [] # <-- Новая переменная
 
+    if course:
+        # Получаем модули (как и было)
+        modules = Module.objects.filter(course=course).order_by('created_at')
+        
+        # Получаем "особенности" (из новой модели CourseFeature)
+        features = course.features.all().order_by('order')
+
+        # Получаем "карточки преподавателей" (из новой модели TeacherCard)
+        teacher_cards = course.teacher_cards.all().order_by('order')
+
+    return render(request, 'core/index.html', {
+        'course': course, 
+        'modules': modules,
+        'features': features,        # <-- Передаем "особенности"
+        'teacher_cards': teacher_cards # <-- Передаем "карточки преподавателей"
+    })
 def about(request):
     return render(request, 'core/about.html')
 

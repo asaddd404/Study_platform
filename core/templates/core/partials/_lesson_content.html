@@ -56,7 +56,7 @@
     <!-- ОПИСАНИЕ -->
     <div class="tab-content" x-show="tab === 'description'" x-transition>
         <div style="font-size:1.05rem; line-height:1.75; color:#2d3748;">
-            {{ lesson.content|linebreaksbr }}
+            {{ lesson.content|safe }}
         </div>
     </div>
 
@@ -89,6 +89,28 @@
     </div>
 
     <!-- ТВОЙ КРУТОЙ СТИЛЬ (немного улучшен) -->
+    <style>
+        /* Фикс для таблиц из Summernote */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        td:empty::before {
+            content: "\00a0"; /* неразрывный пробел */
+        }
+    </style>
     <style>
         :root {
             --accent: #2563eb;

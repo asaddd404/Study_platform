@@ -733,3 +733,12 @@ li { margin-bottom: var(--spacing-2); }
 }
 
 
+.lesson-content h1:empty,
+.lesson-content h2:empty,
+.lesson-content h3:empty,
+.lesson-content h4:empty,
+.lesson-content h5:empty,
+.lesson-content h6:empty,
+.lesson-content p:empty {
+    display: none;
+}

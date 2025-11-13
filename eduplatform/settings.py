@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_summernote',  # <-- 1. ДОБАВЬТЕ ЭТУ СТРОКУ
     'core.apps.CoreConfig',
 ]
 
@@ -102,3 +103,25 @@ AUTH_USER_MODEL = 'core.User'
 
 LOGIN_REDIRECT_URL = 'core:profile'
 LOGOUT_REDIRECT_URL = 'core:index'
+SUMMERNOTE_CONFIG = {
+    'summernote': {
+        'airMode': False,
+        'width': '100%',
+        'height': '400',
+        'toolbar': [
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'clear']],
+            ['fontname', ['fontname']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],  # ← ВКЛЮЧИ ТАБЛИЦЫ
+            ['insert', ['link', 'picture', 'video']],
+            ['view', ['fullscreen', 'codeview']],
+        ],
+        # Важно: не очищать таблицы
+        'clean': False,
+    },
+    'css': (
+        '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.29.0/codemirror.min.css',
+    ),
+}
