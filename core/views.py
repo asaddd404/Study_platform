@@ -404,7 +404,8 @@ def teacher_question_update(request, question_id):
         
     return render(request, 'core/teacher/question_form.html', {
         'form': form,
-        'form_title': 'Редактировать вопрос'
+        'form_title': 'Редактировать вопрос',
+        'question': question  # <-- ДОБАВЬТЕ ЭТУ СТРОКУ
     })
 
 @login_required

@@ -1,21 +1,133 @@
 {% extends 'core/base.html' %}
+{% load static %}
+{% load i18n %}
+
 {% block title %}{{ form_title }}{% endblock %}
 
 {% block content %}
-<div class="course-layout">
-    <aside class="course-sidebar">...</aside>
-    <main class="course-content">
-        <h1>{{ form_title }}</h1>
-        <div class="card">
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <div style="display: flex; justify-content: space-between; margin-top: var(--spacing-6);">
-                    <a href="{{ request.META.HTTP_REFERER|default:"#" }}" class="btn btn-secondary">Отмена</a>
-                    <button type="submit" class="btn btn-primary">Сохранить вопрос</button>
-                </div>
-            </form>
+<div class="container" style="padding-top: 40px; padding-bottom: 40px; max-width: 900px; margin: auto;">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card card-body">
+                <h2>{{ form_title }}</h2>
+                <hr>
+                
+                <form method="post" action="{% url 'core:teacher_question_update' question.id %}">
+                    {% csrf_token %}
+                    
+                    {{ form.as_p }}
+                    
+                    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                        <a href="{% url 'core:teacher_test_update' question.test.id %}" class="btn btn-secondary">Отмена</a>
+                        <button type="submit" class="btn btn-primary">Сохранить вопрос</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </main>
+    </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- 1. Находим все поля
+    const questionTypeSelect = document.getElementById('id_question_type');
+    if (!questionTypeSelect) {
+        console.error("Не найден 'id_question_type'");
+        return;
+    }
+
+    const optionAWrap = document.querySelector('label[for="id_option_a"]')?.closest('p');
+    const optionBWrap = document.querySelector('label[for="id_option_b"]')?.closest('p');
+    const optionCWrap = document.querySelector('label[for="id_option_c"]')?.closest('p');
+    const optionDWrap = document.querySelector('label[for="id_option_d"]')?.closest('p');
+    const correctWrap = document.querySelector('label[for="id_correct_answer"]')?.closest('p');
+
+    const optionAInput = document.getElementById('id_option_a');
+    const optionBInput = document.getElementById('id_option_b');
+    const optionCInput = document.getElementById('id_option_c');
+    const optionDInput = document.getElementById('id_option_d');
+    const correctInput = document.getElementById('id_correct_answer'); 
+
+    const choiceFieldsWraps = [optionAWrap, optionBWrap, optionCWrap, optionDWrap, correctWrap];
+    
+    // --- 2. Создаем наш <select>
+    if (correctInput && correctWrap) {
+        const newSelect = document.createElement('select');
+        newSelect.className = 'form-select'; 
+        newSelect.innerHTML = `
+            <option value="">Выберите правильный ответ...</option>
+            <option value="a">Вариант А</option>
+            <option value="b">Вариант Б</option>
+            <option value="c">Вариант В</option>
+            <option value="d">Вариант Г</option>
+        `;
+        
+        correctWrap.querySelector('label').style.display = 'none';
+        correctInput.style.display = 'none';
+        
+        const newLabel = document.createElement('label');
+        newLabel.className = 'form-label'; 
+        newLabel.textContent = 'Правильный ответ';
+        newLabel.style.fontWeight = 'bold'; 
+        
+        correctWrap.prepend(newLabel); 
+        correctWrap.appendChild(newSelect); 
+
+        const optionInputs = {
+            'a': optionAInput,
+            'b': optionBInput,
+            'c': optionCInput,
+            'd': optionDInput
+        };
+
+        // --- 3. Улучшение: Авто-выбор ответа
+        // (Этот код проверит, какой ответ сохранен, и выберет его в списке)
+        if (correctInput.value) {
+            const currentValue = correctInput.value.trim();
+            if (optionAInput && currentValue === optionAInput.value.trim()) {
+                newSelect.value = 'a';
+            } else if (optionBInput && currentValue === optionBInput.value.trim()) {
+                newSelect.value = 'b';
+            } else if (optionCInput && currentValue === optionCInput.value.trim()) {
+                newSelect.value = 'c';
+            } else if (optionDInput && currentValue === optionDInput.value.trim()) {
+                newSelect.value = 'd';
+            }
+        }
+
+        // --- 4. Функция синхронизации
+        function syncCorrectAnswer() {
+            const selectedLetter = newSelect.value;
+            if (selectedLetter && optionInputs[selectedLetter]) {
+                correctInput.value = optionInputs[selectedLetter].value;
+            } else {
+                correctInput.value = '';
+            }
+        }
+
+        // --- 5. Обработчики событий
+        newSelect.addEventListener('change', syncCorrectAnswer);
+        Object.values(optionInputs).forEach(input => {
+            if(input) {
+                input.addEventListener('input', syncCorrectAnswer);
+            }
+        });
+    }
+
+    // --- 6. Функция скрытия/показа полей
+    function toggleFields() {
+        const isChoice = (questionTypeSelect.value === 'choice');
+        choiceFieldsWraps.forEach(field => {
+            if (field) {
+                field.style.display = isChoice ? 'block' : 'none';
+            }
+        });
+    }
+    
+    toggleFields();
+    questionTypeSelect.addEventListener('change', toggleFields);
+});
+</script>
 {% endblock %}

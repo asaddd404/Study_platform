@@ -129,6 +129,7 @@ class TestForm(forms.ModelForm):
 # eduplatform/core/forms.py
 # forms.py
 class QuestionForm(forms.ModelForm):
+    
     class Meta:
         model = TestQuestion
         fields = [
@@ -138,29 +139,22 @@ class QuestionForm(forms.ModelForm):
         widgets = {
             'text': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
             'question_type': forms.Select(attrs={'class': 'form-input', 'id': 'id_question_type'}),
-            'option_a': forms.TextInput(attrs={'class': 'form-input', 'id': 'id_option_a'}),
+            
+            'option_a': forms.TextInput(attrs={'class': 'form-input', 'id': 'id_option_a'}), 
             'option_b': forms.TextInput(attrs={'class': 'form-input', 'id': 'id_option_b'}),
             'option_c': forms.TextInput(attrs={'class': 'form-input', 'id': 'id_option_c'}),
             'option_d': forms.TextInput(attrs={'class': 'form-input', 'id': 'id_option_d'}),
-            # НЕ СКРЫВАЕМ! Оставляем как TextInput, но JS заменит
-            'correct_answer': forms.TextInput(attrs={
-                'class': 'form-input',
-                'id': 'id_correct_answer',
-                'style': 'display: none;'  # Скрываем визуально
-            }),
-            'max_score': forms.NumberInput(attrs={'class': 'form-input', 'min': 1, 'value': 1}),
+            
+            # ⬇️ ⬇️ ⬇️ ВОТ ПРАВИЛЬНЫЙ ВИДЖЕТ ⬇️ ⬇️ ⬇️
+            # Просто TextInput с ID. Никаких 'style' или 'ChoiceField'
+            'correct_answer': forms.TextInput(attrs={'class': 'form-input', 'id': 'id_correct_answer'}), 
+
+            'max_score': forms.NumberInput(attrs={'class': 'form-input', 'min': 1, 'default': 1}),
         }
         labels = {
-            'text': 'Текст вопроса',
-            'question_type': 'Тип вопроса',
-            'option_a': 'Вариант А',
-            'option_b': 'Вариант Б',
-            'option_c': 'Вариант В',
-            'option_d': 'Вариант Г',
-            'correct_answer': 'Правильный ответ',
-            'max_score': 'Макс. балл за вопрос'
+            # ... (ваши labels) ...
+            'correct_answer': 'Правильный ответ (поле будет заменено JS)',
         }
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['correct_answer'].required = False

@@ -4,7 +4,7 @@
 
     <form 
         hx-post="{% url 'core:new_test_submit' test.id %}"
-        hx-target="#course-content-area"
+        hx-target="#course-content-area" 
         hx-swap="innerHTML"
     >
         {% csrf_token %}
@@ -17,38 +17,39 @@
 
                 {% if question.question_type == 'choice' %}
                     <div class="options">
+                        
                         {% if question.option_a %}
                         <label class="option">
-                            <input type="radio" name="answer_{{ question.id }}" value="a"> {{ question.option_a }}
+                            <input type="radio" name="answer_{{ question.id }}" value="{{ question.option_a }}" required> {{ question.option_a }}
                         </label>
                         {% endif %}
+                        
                         {% if question.option_b %}
                         <label class="option">
-                            <input type="radio" name="answer_{{ question.id }}" value="b"> {{ question.option_b }}
+                            <input type="radio" name="answer_{{ question.id }}" value="{{ question.option_b }}" required> {{ question.option_b }}
                         </label>
                         {% endif %}
+                        
                         {% if question.option_c %}
                         <label class="option">
-                            <input type="radio" name="answer_{{ question.id }}" value="c"> {{ question.option_c }}
+                            <input type="radio" name="answer_{{ question.id }}" value="{{ question.option_c }}" required> {{ question.option_c }}
                         </label>
                         {% endif %}
+                        
                         {% if question.option_d %}
                         <label class="option">
-                            <input type="radio" name="answer_{{ question.id }}" value="d"> {{ question.option_d }}
+                            <input type="radio" name="answer_{{ question.id }}" value="{{ question.option_d }}" required> {{ question.option_d }}
                         </label>
                         {% endif %}
-                    </div>
+                        
+                        </div>
                 
                 {% elif question.question_type == 'open_ended' %}
                     <textarea name="answer_{{ question.id }}" 
                               class="input-answer" 
                               rows="5"
                               placeholder="Введите ваш развернутый ответ..."></textarea>
-                    {% else %}
-                    <input type="text" 
-                           name="answer_{{ question.id }}" 
-                           class="input-answer" 
-                           placeholder="Введите ваш ответ...">
+                    
                 {% endif %}
             </div>
         {% empty %}
@@ -140,19 +141,16 @@
         width: 18px;
         height: 18px;
     }
-
-    /* Этот стиль теперь применится и к <input> и к <textarea> 
-    */
     .input-answer {
         width: 100%;
         padding: 10px 14px;
         border: 1px solid var(--border);
         border-radius: 8px;
         font-size: 1rem;
-        font-family: inherit; /* Важно, чтобы шрифт был как у сайта */
+        font-family: inherit; 
         transition: border 0.2s ease;
-        box-sizing: border-box; /* Важно для <textarea> */
-        resize: vertical; /* Разрешаем менять размер по-вертикали */
+        box-sizing: border-box; 
+        resize: vertical; 
     }
 
     .input-answer:focus {
