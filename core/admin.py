@@ -63,7 +63,7 @@ class CourseAdmin(admin.ModelAdmin):
         
     inlines = [ModuleInline]
     
-admin.site.register(Course, CourseAdmin)
+# admin.site.register(Course, CourseAdmin)
 
 
 # ... Регистрация остальных моделей ...
@@ -176,22 +176,22 @@ admin.site.register(TestAnswer)
 admin.site.register(Progress)
 
 
-# --- 1. Новая админка для "Чему вы научитесь" ---
-@admin.register(CourseFeature)
-class CourseFeatureAdmin(admin.ModelAdmin):
-    list_display = ('title', 'course', 'order') # Показываем важное в списке
-    list_filter = ('course',) # Позволяем фильтровать по курсу
-    search_fields = ('title', 'description')
-    autocomplete_fields = ('course',) # Удобный поиск курса
-    ordering = ('order',)
-    fields = ('course', 'order', 'title', 'description', 'icon_svg')
+# # --- 1. Новая админка для "Чему вы научитесь" ---
+# @admin.register(CourseFeature)
+# class CourseFeatureAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'course', 'order') # Показываем важное в списке
+#     list_filter = ('course',) # Позволяем фильтровать по курсу
+#     search_fields = ('title', 'description')
+#     autocomplete_fields = ('course',) # Удобный поиск курса
+#     ordering = ('order',)
+#     fields = ('course', 'order', 'title', 'description', 'icon_svg')
 
-# --- 2. Новая админка для "Карточек преподавателей" ---
-@admin.register(TeacherCard)
-class TeacherCardAdmin(admin.ModelAdmin):
-    list_display = ('name', 'course', 'order') # Показываем важное в списке
-    list_filter = ('course',) # Позволяем фильтровать по курсу
-    search_fields = ('name', 'description')
-    autocomplete_fields = ('course',) # Удобный поиск курса
-    ordering = ('order',)
-    fields = ('course', 'order', 'name', 'description', 'photo')
+# # --- 2. Новая админка для "Карточек преподавателей" ---
+# @admin.register(TeacherCard)
+# class TeacherCardAdmin(admin.ModelAdmin):
+#     list_display = ('name', 'course', 'order') # Показываем важное в списке
+#     list_filter = ('course',) # Позволяем фильтровать по курсу
+#     search_fields = ('name', 'description')
+#     autocomplete_fields = ('course',) # Удобный поиск курса
+#     ordering = ('order',)
+#     fields = ('course', 'order', 'name', 'description', 'photo')

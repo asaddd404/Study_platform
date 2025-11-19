@@ -118,20 +118,59 @@ li { margin-bottom: var(--spacing-2); }
 /* --- Сетка "Преподаватели" --- */
 .teachers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-12); max-width: 56rem; margin: 0 auto; }
 .teacher-card { text-align: center; }
-.teacher-card img { margin: 0 auto var(--spacing-4) auto; height: 8rem; width: 8rem; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-lg); }
+.teacher-card img { margin: 0 auto var(--spacing-4) auto; height: 15rem; width: 10rem; border-radius: 5%; object-fit: cover; box-shadow: var(--shadow-lg); }
 .teacher-card h4 { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--spacing-1); }
 .teacher-card p { font-size: 0.875rem; color: var(--color-primary); font-weight: 500; margin-bottom: 0; }
 
-/* --- Сетка "Программа курса" (на главной) --- */
-.modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-8); }
-.module-card { display: flex; flex-direction: column; background-color: var(--color-card); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); transition: var(--transition); overflow: hidden; }
-.module-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); }
-.module-card-img { height: 12rem; width: 100%; object-fit: cover; background-color: var(--color-border); }
-.module-card-content { padding: var(--spacing-6); flex-grow: 1; display: flex; flex-direction: column; }
-.module-card h4 { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--spacing-4); }
-.module-card ul { list-style: none; padding-left: 0; margin-bottom: 0; flex-grow: 1; }
-.module-card li { position: relative; padding-left: 1.5rem; margin-bottom: var(--spacing-2); font-size: 0.95rem; }
-.module-card li::before { content: '✓'; position: absolute; left: 0; color: var(--color-primary); font-weight: bold; }
+/* --- Сетка "Программа курса" (на главной) --- */.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-10);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.module-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
+    overflow: hidden;
+    padding: var(--spacing-6);
+}
+
+.module-card h4 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-4);
+    text-align: center;
+}
+
+.module-card ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.module-card li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: var(--spacing-2);
+    font-size: 1rem;
+    line-height: 1.4;
+}
+.module-card li::before {
+  content: '\2713'; /* Юникод галочки */
+  position: absolute;
+  left: 0;
+  color: var(--color-primary);
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+
 .view-program-link { display: block; margin-top: var(--spacing-16); text-align: center; font-size: 1.125rem; font-weight: 500; }
 
 /* --- Футер --- */
@@ -409,7 +448,16 @@ li { margin-bottom: var(--spacing-2); }
 /* --- Сетка "Преподаватели" --- */
 .teachers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-12); max-width: 56rem; margin: 0 auto; }
 .teacher-card { text-align: center; }
-.teacher-card img { margin: 0 auto var(--spacing-4) auto; height: 8rem; width: 8rem; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-lg); }
+.teacher-card .teacher-card img {
+  width: 90%;
+  max-width: 240px;
+  height: auto;
+  border-radius: var(--border-radius);
+  object-fit: cover;
+  margin: 0 auto var(--spacing-4) auto;
+  box-shadow: var(--shadow-lg);
+}
+img { margin: 0 auto var(--spacing-4) auto; height: 40%; width: 45%; border-radius: 0%; object-fit: cover;  }
 .teacher-card h4 { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--spacing-1); }
 .teacher-card p { font-size: 0.875rem; color: var(--color-primary); font-weight: 500; margin-bottom: 0; }
 

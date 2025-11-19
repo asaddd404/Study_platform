@@ -2,69 +2,12 @@
 {% load static %}
 {% block title %}Онлайн-курс: Культура речи и стилистика{% endblock %}
 {% block content %}
-    
-    <header class="header" id="main-header">
-        <div class="container">
-            <a href="{% url 'core:index' %}" class="logo">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
-                <span>EduPlatform</span>
-            </a>
-            
-            <nav class="header-nav">
-                <a href="{% url 'core:about' %}">О платформе</a>
-                <a href="{% url 'core:course' %}">Программа курса</a>
-                {% if user.is_authenticated %}
-                    <a href="{% url 'core:profile' %}">Профиль</a>
-                    <form action="{% url 'core:logout' %}" method="post">{% csrf_token %}<button type="submit">Выйти</button></form>
-                {% else %}
-                    <a href="{% url 'core:login' %}">Войти</a>
-                    <a href="{% url 'core:register' %}" style="color: #fff;" class="btn btn-primary btn-sm">Регистрация</a>
-                {% endif %}
-            </nav>
-
-            <button class="burger-menu-button" @click="isMobileMenuOpen = true" aria-label="Открыть меню">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                </svg>
-            </button>
-        </div>
-    </header>
-
-    <div class="mobile-menu-overlay" 
-         x-show="isMobileMenuOpen" 
-         @click="isMobileMenuOpen = false" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         style="display: none;">
-    </div>
-    
-    <div class="mobile-menu-panel" 
-         x-show="isMobileMenuOpen"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="transform translate-x-full"
-         x-transition:enter-end="transform translate-x-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="transform translate-x-0"
-         x-transition:leave-end="transform translate-x-full"
-         style="display: none;">
-        
-        <div class="mobile-menu-header">
-            <a href="{% url 'core:index' %}" class="logo">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
-                <span>EduPlatform</span>
-            </a>
-            <button class="mobile-menu-close-button" @click="isMobileMenuOpen = false" aria-label="Закрыть меню">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        
-        <nav class="mobile-menu-links">
+<header class="header" id="main-header">
+    <div class="container">
+        <a href="{% url 'core:index' %}" class="logo">
+            <span>EduPlatform</span>
+        </a>
+        <nav class="header-nav">
             <a href="{% url 'core:about' %}">О платформе</a>
             <a href="{% url 'core:course' %}">Программа курса</a>
             {% if user.is_authenticated %}
@@ -76,94 +19,101 @@
             {% endif %}
         </nav>
     </div>
-    <main>
-        <section class="section section-bg-white hero-section">
-            <div class="container">
-                <h1>Ваша речь — ваш <span style="color: var(--color-primary);">успех</span>.</h1>
-                <p>Превратите слова в свой главный инструмент. Наш курс научит вас говорить и писать уверенно, грамотно и убедительно.</p>
-                {% if user.is_authenticated %}
-                    <a href="{% url 'core:profile' %}" class="btn btn-primary btn-lg">Перейти в профиль</a>
-                {% else %}
-                    <a href="{% url 'core:register' %}" class="btn btn-primary btn-lg">Начать обучение</a>
-                {% endif %}
-            </div>
-        </section>
-        
-        <section class="section section-bg-gray">
-            <div class="container">
-                <h2 class="section-title">Чему вы научитесь на курсе?</h2>
-                
-                <div class="features-grid">
-                    {% for feature in features %}
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            {% autoescape off %}
-                                {{ feature.icon_svg|default:'' }}
-                            {% endautoescape %}
-                        </div>
-                        <h3>{{ feature.title }}</h3>
-                        <p>{{ feature.description }}</p>
-                    </div>
-                    {% empty %}
-                        <p>Описание того, чему вы научитесь, скоро появится.</p>
-                    {% endfor %}
-                </div>
-                </div>
-        </section>
-        <section class="section section-bg-white">
-            <div class="container">
-                <h2 class="section-title">Ваши преподаватели — эксперты-филологи</h2>
-                
-                <div class="teachers-grid">
-                    {% for card in teacher_cards %}
-                    <div class="teacher-card">
-                        {% if card.photo %}
-                            <img src="{{ card.photo.url }}" alt="{{ card.name }}">
-                        {% endif %}
-                        
-                        <h4>{{ card.name }}</h4>
-                        
-                        <p>{{ card.description }}</p>
-                    </div>
-                    {% empty %}
-                        <p>Преподаватели скоро будут добавлены.</p>
-                    {% endfor %}
-                </div>
-                </div>
-        </section>
+</header>
 
-        <section class="section section-bg-gray">
-            <div class="container">
-                <h2 class="section-title">Программа курса: от основ до мастерства</h2>
-                <div class="modules-grid">
-                    {% for module in modules|slice:":3" %}
-                        <div class="module-card">
-                            <img class="module-card-img" src="https://placehold.co/600x400/BFDBFE/1D4ED8?text=Модуль+{{ forloop.counter }}" alt="{{ module.title }}">
-                            <div class="module-card-content">
-                                <h4>{{ module.title }}</h4>
-                                <ul>
-                                    {% for lesson in module.lessons.all|slice:":3" %}
-                                        <li>{{ lesson.title }}</li>
-                                    {% empty %}
-                                        <li>Скоро здесь появятся уроки...</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div>
-                    {% endfor %}
+<main>
+    <section class="section section-bg-white hero-section">
+        <div class="container">
+            <h1>Қ. ЖӘНІБЕКОВ АТЫНДАҒЫ ОҢТҮСТІК ҚАЗАҚСТАН ПЕДАГОГИКАЛЫҚ УНИВЕРСИТЕТІ</h1>
+            <img src="{% static 'images/image2.png' %}" alt="Университет">
+            <h1>Филологический факультет, кафедра русского языка и литературы</h1>
+            <p><strong>Онлайн-курс: Культура речи и стилистика</strong></p>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'core:profile' %}" class="btn btn-primary btn-lg">Перейти в профиль</a>
+            {% else %}
+                <a href="{% url 'core:register' %}" class="btn btn-primary btn-lg">Начать обучение</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="section section-bg-gray">
+        <div class="container">
+            <h1 class="section-title">Чему вы научитесь на курсе?</h2>
+            <h4 style="margin-left: 100px;">Вы освоите нормы современного русского языка, научитесь правильно использовать лексические и грамматические средства, познакомитесь со стилями речи и получите навыки ораторского мастерства.</h4>
+        </div>
+    </section>
+    <section class="section section-bg-white">
+        <div class="container">
+            <h2 class="section-title">Разработчики — преподаватели кафедры русского языка и литературы</h2>
+            <div class="teachers-grid">
+                <div class="teacher-card">
+                    <img src="{% static 'images/teachers/image4.jpg' %}" alt="Дмитрюк Наталья Васильевна">
+                    <h4>Дмитрюк Наталья Васильевна</h4>
+                    <p>д.ф.н., профессор</p>
                 </div>
-                <a href="{% url 'core:course' %}" class="view-program-link">Посмотреть полную программу &rarr;</a>
+                <div class="teacher-card">
+                    <img src="{% static 'images/teachers/image5.jpg' %}" alt="Стычева Ольга Андреевна">
+                    <h4>Стычева Ольга Андреевна</h4>
+                    <p>к.п.н., доцент</p>
+                </div>
+                <div class="teacher-card">
+                    <img src="{% static 'images/teachers/image6.jpg' %}" alt="Мезенцева Елена Сергеевна">
+                    <h4>Мезенцева Елена Сергеевна</h4>
+                    <p>к.ф.н., ст. преподаватель</p>
+                </div>
             </div>
-        </section>
-        <footer class="footer">
-            <div class="container">
-                <nav class="footer-nav">
-                    <a href="{% url 'core:about' %}">О платформе</a>
-                    <a href="#">Контакты</a>
-                    <a href="#">Политика конфиденциальности</a>
-                </nav>
-                <p>&copy; {% now "Y" %} EduPlatform. Все права защищены.</p>
+        </div>
+    </section>
+    
+
+    <section class="section section-bg-gray">
+        <div class="container">
+            <h2 class="section-title">Программа курса</h2>
+            <div class="modules-grid">
+                <div class="module-card">
+                    <h4>Модуль 1. Общие проблемы культуры речи</h4>
+                    <ul>
+                        <li>Культура речи как особая лингвистическая дисциплина</li>
+                        <li>Норма как основная категория культуры речи</li>
+                        <li>Орфоэпия как специальный раздел культуры речи</li>
+                        <li>Лексико‑фразеологические средства языка</li>
+                        <li>Функционирование заимствованной лексики</li>
+                    </ul>
+                </div>
+                <div class="module-card">
+                    <h4>Модуль 2. Грамматические нормы языка</h4>
+                    <ul>
+                        <li>Именные части речи: функциональный аспект</li>
+                        <li>Глагол и его формы</li>
+                        <li>Классификация речевых ошибок и недочётов</li>
+                        <li>Речевой этикет</li>
+                        <li>Основы ораторского мастерства</li>
+                    </ul>
+                </div>
+                <div class="module-card">
+                    <h4>Модуль 3. Стилистика речи</h4>
+                    <ul>
+                        <li>Классификация стилей на основе функции языка</li>
+                        <li>Научный стиль речи</li>
+                        <li>Официально‑деловой стиль</li>
+                        <li>Публицистический стиль речи</li>
+                        <li>Язык художественной литературы</li>
+                    </ul>
+                </div>
             </div>
-        </footer>
-    </main>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <nav class="footer-nav">
+                <a href="{% url 'core:about' %}">О платформе</a>
+                <a href="#">Контакты</a>
+                <a href="#">Политика конфиденциальности</a>
+            </nav>
+            <p>&copy; {% now "Y" %} EduPlatform. Все права защищены.</p>
+        </div>
+    </footer>
+</main>
 {% endblock %}
