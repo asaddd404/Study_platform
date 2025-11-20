@@ -444,6 +444,15 @@ li { margin-bottom: var(--spacing-2); }
 .feature-icon svg { height: 1.75rem; width: 1.75rem; }
 .feature-card h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--spacing-3); }
 .feature-card p { font-size: 0.95rem; margin-bottom: 0; }
+.logo2{
+  width: 90%;
+  height: 100px;
+}
+.logo1{
+  width: 20%;
+  height: 100px;
+  margin-left: 0px;
+}
 
 /* --- Сетка "Преподаватели" --- */
 .teachers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-12); max-width: 56rem; margin: 0 auto; }

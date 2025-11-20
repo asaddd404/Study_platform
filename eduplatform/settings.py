@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-m+j)920&u(m=48!_6*y@4#7(1j(a=s(o^9e5a(b6@k3*z75q(x
 
 DEBUG = True
 LOGIN_URL = 'core:register'
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # ... (INSTALLED_APPS, MIDDLEWARE, TEMPLATES, DATABASES, AUTH_PASSWORD_VALIDATORS - без изменений) ...
 
