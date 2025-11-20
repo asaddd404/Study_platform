@@ -799,3 +799,346 @@ img { margin: 0 auto var(--spacing-4) auto; height: 40%; width: 45%; border-radi
 .lesson-content p:empty {
     display: none;
 }
+
+
+/* === core/static/css/styles.css (Финальная версия) === */
+
+/* --- Переменные (Палитра, Шрифты, Размеры) --- */
+:root {
+  /* Цвета */
+  --color-primary: #2563EB; /* Синий */
+  --color-primary-dark: #1D4ED8; /* Темно-синий для hover */
+  --color-primary-light: #EFF6FF; /* Очень светлый синий */
+  --color-text: #1F2937; /* Основной текст (почти черный) */
+  --color-text-muted: #6B7280; /* Приглушенный текст */
+  --color-background: #F9FAFB; /* Очень светлый серый фон */
+  --color-card: #FFFFFF; /* Белый для карточек */
+  --color-border: #E5E7EB; /* Светло-серая граница */
+  --color-success: #10B981; /* Зеленый */
+  --color-success-light: #D1FAE5;
+  --color-error: #EF4444; /* Красный */
+  --color-footer-bg: #111827; /* Темный фон футера */
+  --color-footer-text: #9CA3AF; /* Серый текст футера */
+  --color-footer-link-hover: #FFFFFF; /* Белый для hover ссылок в футере */
+
+  /* Шрифты */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+  /* Размеры и Отступы */
+  --spacing-1: 0.25rem; --spacing-2: 0.5rem; --spacing-3: 0.75rem; --spacing-4: 1rem;
+  --spacing-5: 1.25rem; --spacing-6: 1.5rem; --spacing-8: 2rem; --spacing-10: 2.5rem;
+  --spacing-12: 3rem; --spacing-16: 4rem; --spacing-20: 5rem; --spacing-24: 6rem;
+
+  /* Прочее */
+  --border-radius: 0.5rem; /* 8px */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --transition: all 0.2s ease-in-out;
+}
+
+/* --- Сброс и База --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-family-sans); line-height: 1.6; color: var(--color-text); background-color: var(--color-background); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+a { color: var(--color-primary); text-decoration: none; transition: var(--transition); }
+a:hover { color: var(--color-primary-dark); text-decoration: underline; }
+img { max-width: 100%; height: auto; display: block; } /* Базовый стиль для изображений */
+h1, h2, h3, h4 { color: var(--color-text); margin-bottom: 0.75em; font-weight: 700; line-height: 1.3; }
+h1 { font-size: 3rem; letter-spacing: -0.025em; }
+h2 { font-size: 2.25rem; }
+h3 { font-size: 1.875rem; }
+h4 { font-size: 1.25rem; }
+p { margin-bottom: var(--spacing-4); color: var(--color-text-muted); }
+ul, ol { margin-bottom: var(--spacing-4); padding-left: var(--spacing-5); }
+li { margin-bottom: var(--spacing-2); }
+
+/* --- Контейнер --- */
+.container { max-width: 1280px; margin-left: auto; margin-right: auto; padding-left: var(--spacing-6); padding-right: var(--spacing-6); }
+@media (max-width: 768px) { .container { padding-left: var(--spacing-4); padding-right: var(--spacing-4); } }
+
+/* --- Шапка --- */
+.header { background-color: rgba(255, 255, 255, 0.9); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 50; backdrop-filter: blur(8px); }
+.header .container { display: flex; justify-content: space-between; align-items: center; height: 4.5rem; }
+.logo { display: flex; align-items: center; text-decoration: none; }
+.logo svg { height: 2rem; width: 2rem; color: var(--color-primary); }
+.logo span { margin-left: var(--spacing-3); font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
+
+/* Стили для лого в шапке (image2.png) */
+.logo1 {
+  height: 40px; /* Фиксированная высота лого в шапке */
+  width: auto;
+  margin-left: 0; /* Убираем margin-left */
+}
+
+.header-nav { display: flex; align-items: center; gap: var(--spacing-6); }
+.header-nav a { color: var(--color-text-muted); font-weight: 500; }
+.header-nav a:hover { color: var(--color-primary); text-decoration: none; }
+.header-nav form { display: inline; }
+.header-nav form button { background: none; border: none; color: var(--color-text-muted); font-weight: 500; cursor: pointer; font-size: 1rem; padding: 0; }
+.header-nav form button:hover { color: var(--color-primary); }
+@media (max-width: 768px) { .header-nav { display: none; } } /* Скрываем навигацию на мобильных */
+
+/* --- Кнопки --- */
+.btn { display: inline-block; padding: var(--spacing-3) var(--spacing-6); border: 1px solid transparent; border-radius: var(--border-radius); font-weight: 500; text-align: center; cursor: pointer; transition: var(--transition); font-size: 1rem; line-height: 1.5; }
+.btn:hover { text-decoration: none; transform: translateY(-1px); }
+.btn-primary { background-color: var(--color-primary); color: white; border-color: var(--color-primary); }
+.btn-primary:hover { background-color: var(--color-primary-dark); border-color: var(--color-primary-dark); color: white; box-shadow: var(--shadow-md); }
+.btn-lg { padding: var(--spacing-4) var(--spacing-8); font-size: 1.125rem; }
+.btn-sm { padding: var(--spacing-2) var(--spacing-4); font-size: 0.875rem; }
+.btn-block { display: block; width: 100%; }
+
+/* --- Карточки --- */
+.card { background-color: var(--color-card); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); padding: var(--spacing-8); }
+
+/* --- Секции на Главной --- */
+.section { padding-top: var(--spacing-20); padding-bottom: var(--spacing-20); }
+.section-bg-white { background-color: var(--color-card); }
+.section-bg-gray { background-color: var(--color-background); }
+.section-title { font-size: 2.25rem; font-weight: 700; text-align: center; margin-bottom: var(--spacing-16); }
+.hero-section { text-align: center; }
+.hero-section h1 { margin-bottom: var(--spacing-6); }
+.hero-section p { font-size: 1.25rem; max-width: 48rem; margin-left: auto; margin-right: auto; margin-bottom: var(--spacing-10); }
+
+/* --- Сетка "Преподаватели" --- */
+.teachers-grid { 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: var(--spacing-12); 
+  max-width: 56rem; 
+  margin: 0 auto; 
+}
+.teacher-card { text-align: center; }
+.teacher-card img {
+  margin: 0 auto var(--spacing-4) auto; 
+  height: 15rem; 
+  width: 10rem; 
+  border-radius: var(--border-radius); 
+  object-fit: cover; 
+  box-shadow: var(--shadow-lg);
+}
+.teacher-card h4 { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--spacing-1); }
+.teacher-card p { font-size: 0.875rem; color: var(--color-primary); font-weight: 500; margin-bottom: 0; }
+
+/* --- Сетка "Программа курса" (на главной) --- */
+.modules-grid { 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: var(--spacing-10); /* Увеличил gap для лучшей читаемости */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.module-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition);
+  overflow: hidden;
+  padding: var(--spacing-6); /* Добавил padding */
+}
+.module-card h4 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-4);
+  text-align: center;
+}
+.module-card ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  flex-grow: 1;
+}
+.module-card li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: var(--spacing-2);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.module-card li::before {
+content: '\2713'; /* Юникод галочки */
+position: absolute;
+left: 0;
+color: var(--color-primary);
+font-weight: bold;
+font-size: 1rem;
+}
+.view-program-link { display: block; margin-top: var(--spacing-16); text-align: center; font-size: 1.125rem; font-weight: 500; }
+
+/* --- Футер --- */
+.footer { background-color: var(--color-footer-bg); color: var(--color-footer-text); padding: var(--spacing-12) 0; margin-top: var(--spacing-24); }
+.footer .container { text-align: center; }
+.footer-nav { display: flex; justify-content: center; gap: var(--spacing-6); margin-bottom: var(--spacing-8); }
+.footer-nav a { color: var(--color-footer-text); }
+.footer-nav a:hover { color: var(--color-footer-link-hover); }
+.footer p { color: var(--color-text-muted); font-size: 0.875rem; margin: 0; }
+
+
+/*
+=========================================
+=== СТИЛИ ДЛЯ БУРГЕР-МЕНЮ (АДАПТИВНОСТЬ) ===
+=========================================
+*/
+
+/* --- Кнопка Бургера --- */
+.burger-menu-button {
+display: none; /* Скрыта по умолчанию, показываем в media query */
+padding: 8px;
+background-color: transparent;
+border: none;
+cursor: pointer;
+color: var(--color-text);
+}
+.burger-menu-button svg {
+width: 2rem;
+height: 2rem;
+}
+
+/* --- Оверлей (темный фон) --- */
+.mobile-menu-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+z-index: 90;
+transition: opacity 0.3s ease;
+}
+
+/* --- Боковая панель --- */
+.mobile-menu-panel {
+position: fixed;
+top: 0;
+right: 0;
+width: 80%;
+max-width: 320px;
+height: 100%;
+background-color: var(--color-card);
+z-index: 100;
+box-shadow: -10px 0 20px rgba(0, 0, 0, 0.1);
+transform: translateX(100%);
+transition: transform 0.3s ease-out;
+display: flex;
+flex-direction: column;
+}
+.mobile-menu-panel[x-show] {
+transform: translateX(0);
+}
+
+/* --- Шапка мобильной панели (Лого + Кнопка "Закрыть") --- */
+.mobile-menu-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 0 var(--spacing-4);
+height: 4.5rem;
+border-bottom: 1px solid var(--color-border);
+flex-shrink: 0;
+}
+.mobile-menu-header .logo1 {
+height: 40px;
+width: auto;
+}
+.mobile-menu-close-button {
+padding: 8px;
+background: none;
+border: none;
+cursor: pointer;
+color: var(--color-text-muted);
+font-size: 1.5rem;
+}
+
+/* --- Ссылки в мобильной панели --- */
+.mobile-menu-links {
+padding: var(--spacing-4);
+display: flex;
+flex-direction: column;
+gap: var(--spacing-2);
+}
+.mobile-menu-links a,
+.mobile-menu-links button {
+display: block;
+width: 100%;
+padding: var(--spacing-3) var(--spacing-4);
+font-size: 1.125rem;
+font-weight: 500;
+color: var(--color-text);
+border-radius: var(--border-radius);
+transition: var(--transition);
+text-align: left;
+background: none;
+border: none;
+cursor: pointer;
+}
+.mobile-menu-links a:hover,
+.mobile-menu-links button:hover {
+background-color: var(--color-background);
+color: var(--color-primary);
+text-decoration: none;
+}
+.mobile-menu-links form {
+margin-top: var(--spacing-4);
+border-top: 1px solid var(--color-border);
+padding-top: var(--spacing-4);
+}
+.mobile-menu-links .btn-primary {
+margin-top: var(--spacing-2);
+text-align: center;
+}
+.mobile-menu-links .btn-primary:hover {
+color: white;
+background-color: var(--color-primary-dark);
+}
+
+/* =========================================
+=== ГЛАВНАЯ АДАПТИВНОСТЬ (768px) ===
+=========================================
+*/
+@media (max-width: 1024px) {
+  .modules-grid { grid-template-columns: repeat(2, 1fr); }
+  .teachers-grid { gap: var(--spacing-8); } /* Уменьшаем расстояние между преподами на планшетах */
+}
+
+@media (max-width: 768px) {
+  /* --- Шапка --- */
+  .header-nav {
+      display: none; /* Скрываем десктопную навигацию */
+  }
+  .burger-menu-button {
+      display: block; /* Показываем кнопку бургера */
+  }
+
+  /* --- Сетки (переход к одному столбцу) --- */
+  .features-grid { grid-template-columns: 1fr; }
+  .modules-grid { grid-template-columns: 1fr; }
+  .teachers-grid { grid-template-columns: 1fr; }
+  
+  /* --- Типографика --- */
+  h1 { font-size: 2.25rem; }
+  h2 { font-size: 1.875rem; }
+  .hero-section p { font-size: 1.125rem; }
+  .section { padding-top: var(--spacing-16); padding-bottom: var(--spacing-16); }
+  .section-title { margin-bottom: var(--spacing-12); }
+
+  /* --- Футер --- */
+  .footer-nav { flex-direction: column; gap: var(--spacing-2); }
+  .footer-nav a { padding: var(--spacing-1) 0; }
+
+  /* --- Страница Курса --- */
+  .course-layout { flex-direction: column; }
+  .course-sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--color-border); }
+  .course-content { padding: var(--spacing-4); }
+  .header .container { padding-left: var(--spacing-4); padding-right: var(--spacing-4); }
+}
+
+/* Дополнительные общие стили для других компонентов */
+.lesson-card, .test-card, .test-result-card, .lesson-locked-card {
+background: var(--color-card);
+border-radius: var(--border-radius);
+padding: var(--spacing-6);
+box-shadow: var(--shadow-md);
+}
+/* ... (Остальные стили, которые вы добавили, опущены для краткости, но должны быть в вашем файле) ... */
