@@ -63,7 +63,7 @@ class CourseAdmin(admin.ModelAdmin):
         
     inlines = [ModuleInline]
     
-# admin.site.register(Course, CourseAdmin)
+admin.site.register(Course, CourseAdmin)
 
 
 # ... Регистрация остальных моделей ...
