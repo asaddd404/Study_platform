@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin
+from django_summernote.admin import SummernoteModelAdmin
+
 from .models import (
     User, Course, Module, Lesson, Resource, 
     Test, TestQuestion, TestSubmission, TestAnswer, Progress, CourseFeature, TeacherCard
@@ -40,7 +42,10 @@ admin.site.register(Module, ModuleAdmin)
 
 
 # Админка для Уроков
-class LessonAdmin(admin.ModelAdmin):
+class LessonAdmin(SummernoteModelAdmin):
+    
+    summernote_fields = ('content',)
+    
     list_display = ('title', 'module', 'author', 'created_at')
     list_filter = ('module__course', 'module', 'author')
     search_fields = ('title', 'content')
@@ -114,7 +119,7 @@ class TestQuestionAdmin(admin.ModelAdmin):
             return (
                 base_fields,
                 ('Варианты и Ответ (для "Выбора из вариантов")', {
-                    'fields': ('option_a', 'option_b', 'option_c', 'option_d', 'correct_answer')
+                    'fields': ('option_a', 'option_b', 'option_c', 'option_d','option_e', 'correct_answer')
                 })
             )
         # Если это открытый вопрос
@@ -156,6 +161,8 @@ class TestQuestionAdmin(admin.ModelAdmin):
                 choices.append((obj.option_c, f"C: {obj.option_c}"))
             if obj.option_d:
                 choices.append((obj.option_d, f"D: {obj.option_d}"))
+            if obj.option_e: 
+                choices.append((obj.option_e, f"E: {obj.option_e}"))    
             
             # Применяем наши choices к полю 'correct_answer'
             form.base_fields['correct_answer'] = forms.ChoiceField(

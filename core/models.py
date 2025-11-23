@@ -191,6 +191,7 @@ class TestQuestion(models.Model):
     option_b = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант Б")
     option_c = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант В")
     option_d = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант Г")
+    option_e = models.CharField(max_length=255, blank=True, null=True, verbose_name="Вариант Д")
 
     # 4. ПРАВИЛЬНЫЙ ОТВЕТ (только для 'choice')
     # <--- ИЗМЕНЕНО: Сделаем необязательным
