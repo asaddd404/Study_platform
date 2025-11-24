@@ -16,7 +16,7 @@
             </form>
         {% endif %}
     </div>
-
+    <h3 >Цель урока :{{lesson.goal_lesson}}</h3> <br>
     <!-- МАЛЕНЬКОЕ ВИДЕО (560×315) -->
     {% if lesson.video_url %}
         <div class="video-wrapper">
@@ -44,13 +44,9 @@
         <button class="tab-button" 
                 :class="{ 'active': tab === 'assignment' }" 
                 @click="tab = 'assignment'">
-            Задание
+            Задания
         </button>
-        <button class="tab-button" 
-                :class="{ 'active': tab === 'materials' }" 
-                @click="tab = 'materials'">
-            Материалы
-        </button>
+       
     </div>
 
     <!-- ОПИСАНИЕ -->

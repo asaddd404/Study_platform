@@ -44,7 +44,7 @@ admin.site.register(Module, ModuleAdmin)
 # Админка для Уроков
 class LessonAdmin(SummernoteModelAdmin):
     
-    summernote_fields = ('content',)
+    summernote_fields = ('content','assignment')
     
     list_display = ('title', 'module', 'author', 'created_at')
     list_filter = ('module__course', 'module', 'author')
@@ -133,7 +133,7 @@ class TestQuestionAdmin(admin.ModelAdmin):
             ('Варианты и Ответ', {
                 'description': "Для типа 'Выбор из вариантов', заполните варианты. " \
                                "После сохранения вы сможете выбрать правильный ответ из выпадающего списка.",
-                'fields': ('option_a', 'option_b', 'option_c', 'option_d', 'correct_answer')
+                'fields': ('option_a', 'option_b', 'option_c', 'option_d', 'option_e','correct_answer')
             })
         )
 

@@ -41,6 +41,13 @@
                             <input type="radio" name="answer_{{ question.id }}" value="{{ question.option_d }}" required> {{ question.option_d }}
                         </label>
                         {% endif %}
+
+
+                         {% if question.option_e %}
+                        <label class="option">
+                            <input type="radio" name="answer_{{ question.id }}" value="{{ question.option_e }}" required> {{ question.option_e }}
+                        </label>
+                        {% endif %}
                         
                         </div>
                 

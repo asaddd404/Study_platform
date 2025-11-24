@@ -91,7 +91,7 @@ class Lesson(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons", verbose_name=_("Модуль"))
     title = models.CharField(max_length=200, verbose_name=_("Название занятия"))
     content = models.TextField(blank=True, verbose_name=_("Содержание"))
-    
+    goal_lesson = models.TextField(blank=True, null=True,verbose_name=_("Цель занятия"))
     video_url = models.URLField(blank=True, null=True, verbose_name=_("URL видео (Youtube/Vimeo)"))
     
     video_file = models.FileField(
