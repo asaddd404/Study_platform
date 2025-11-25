@@ -61,7 +61,8 @@
         <h3 style="margin:16px 0 12px; color:#1e293b;">Задание к уроку</h3>
         {% if lesson.assignment %}
             <div style="background:#f1f5f9; padding:18px 22px; border-radius:10px; border-left:4px solid #2563eb; font-size:1rem; line-height:1.7;">
-                {{ lesson.assignment|linebreaksbr }}
+                {{ lesson.assignment|safe }}
+
             </div>
         {% else %}
             <p style="color:#64748b; font-style:italic;">Задание не добавлено.</p>
